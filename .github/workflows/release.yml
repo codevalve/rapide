@@ -28,6 +28,4 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # You'll need to add a CUSTOM_GITHUB_TOKEN with repo scope 
-          # to push to your homebrew-tap repo if it's different.
-          # For now, we'll try with GITHUB_TOKEN.
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}

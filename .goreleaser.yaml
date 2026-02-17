@@ -41,14 +41,14 @@ changelog:
       - "^docs:"
       - "^test:"
 
-# brews:
-#   - name: rapide
-#     repository:
-#       owner: codevalve
-#       name: homebrew-tap
-#     directory: Formula
-#     homepage: "https://github.com/codevalve/rapide"
-#     description: "Lightweight CLI for Bullet Journal-style rapid logging."
-#     license: "MIT"
-#     install: |
-#       bin.install "rapide"
+brews:
+  - name: rapide
+    repository:
+      owner: codevalve
+      name: homebrew-tap
+    directory: Formula
+    homepage: "https://github.com/codevalve/rapide"
+    description: "Lightweight CLI for Bullet Journal-style rapid logging."
+    license: "MIT"
+    install: |
+      bin.install "rapide"
