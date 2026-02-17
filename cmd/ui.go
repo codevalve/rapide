@@ -18,21 +18,38 @@ var (
 )
 
 func renderEntry(e model.Entry) {
-	ts := timestampStyle.Render(e.Timestamp.Format("2006-01-02 15:04"))
-	mk := marginStyle.Render(e.MarginKey)
-	blt := bulletStyle.Render(e.Bullet)
-	cnt := noteStyle.Render(e.Content)
-	id := idStyle.Render(e.ID)
+	rawTS := e.Timestamp.Format("2006-01-02 15:04")
+	rawMK := e.MarginKey
+	rawBlt := e.Bullet
+	rawCnt := e.Content
+	rawID := e.ID
+	rawPrio := ""
+	if e.Priority {
+		rawPrio = "!"
+	}
 
+	// If done, overwrite components with dimmed style
+	if e.Bullet == "x" {
+		ts := doneStyle.Render(rawTS)
+		mk := doneStyle.Render(fmt.Sprintf("%-12s", rawMK))
+		blt := doneStyle.Render(rawBlt)
+		cnt := doneStyle.Render(rawCnt)
+		id := doneStyle.Render(fmt.Sprintf("%-4s", rawID))
+		prio := doneStyle.Render(rawPrio)
+		fmt.Printf("%s | %s | %s | %s %s %s\n", id, ts, mk, blt, cnt, prio)
+		return
+	}
+
+	// Default styling
+	ts := timestampStyle.Render(rawTS)
+	mk := marginStyle.Render(rawMK)
+	blt := bulletStyle.Render(rawBlt)
+	cnt := noteStyle.Render(rawCnt)
+	id := idStyle.Render(rawID)
 	prio := ""
 	if e.Priority {
-		prio = priorityStyle.Render("!")
+		prio = priorityStyle.Render(rawPrio)
 	}
 
-	output := fmt.Sprintf("%s | %s | %s | %s %s %s", id, ts, mk, blt, cnt, prio)
-	if e.Bullet == "x" {
-		output = doneStyle.Render(output)
-	}
-
-	fmt.Println(output)
+	fmt.Printf("%s | %s | %s | %s %s %s\n", id, ts, mk, blt, cnt, prio)
 }
