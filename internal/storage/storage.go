@@ -2,7 +2,9 @@ package storage
 
 import (
 	"bufio"
+	"crypto/sha1"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"rapide/internal/model"
@@ -24,20 +26,24 @@ func NewStorage() (*Storage, error) {
 	return &Storage{FilePath: filepath.Join(dir, "entries.jsonl")}, nil
 }
 
-func (s *Storage) Append(entry model.Entry) error {
+func (s *Storage) Append(entry model.Entry) (string, error) {
+	if entry.ID == "" {
+		entry.ID = generateID(entry)
+	}
+
 	f, err := os.OpenFile(s.FilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer f.Close()
 
 	data, err := json.Marshal(entry)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	_, err = f.Write(append(data, '\n'))
-	return err
+	return entry.ID, err
 }
 
 func (s *Storage) List() ([]model.Entry, error) {
@@ -57,7 +63,85 @@ func (s *Storage) List() ([]model.Entry, error) {
 		if err := json.Unmarshal(scanner.Bytes(), &entry); err != nil {
 			continue // skip malformed lines
 		}
+		// Migration for old entries without IDs
+		if entry.ID == "" {
+			entry.ID = generateID(entry)
+		}
 		entries = append(entries, entry)
 	}
 	return entries, scanner.Err()
+}
+
+func (s *Storage) Update(id string, newEntry model.Entry) error {
+	entries, err := s.List()
+	if err != nil {
+		return err
+	}
+
+	found := false
+	for i, e := range entries {
+		if e.ID == id {
+			newEntry.ID = id
+			if newEntry.Timestamp.IsZero() {
+				newEntry.Timestamp = e.Timestamp
+			}
+			entries[i] = newEntry
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return fmt.Errorf("entry with ID %s not found", id)
+	}
+
+	return s.saveAll(entries)
+}
+
+func (s *Storage) Delete(id string) error {
+	entries, err := s.List()
+	if err != nil {
+		return err
+	}
+
+	var updated []model.Entry
+	found := false
+	for _, e := range entries {
+		if e.ID == id {
+			found = true
+			continue
+		}
+		updated = append(updated, e)
+	}
+
+	if !found {
+		return fmt.Errorf("entry with ID %s not found", id)
+	}
+
+	return s.saveAll(updated)
+}
+
+func (s *Storage) saveAll(entries []model.Entry) error {
+	f, err := os.OpenFile(s.FilePath, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	for _, e := range entries {
+		data, err := json.Marshal(e)
+		if err != nil {
+			return err
+		}
+		if _, err := f.Write(append(data, '\n')); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func generateID(e model.Entry) string {
+	h := sha1.New()
+	h.Write([]byte(fmt.Sprintf("%d%s%s", e.Timestamp.UnixNano(), e.Bullet, e.Content)))
+	return fmt.Sprintf("%x", h.Sum(nil))[:4]
 }

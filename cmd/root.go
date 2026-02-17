@@ -36,12 +36,13 @@ Example: rapide work | - Martin updated git repo`,
 		}
 
 		entry := internal.ParseEntry(args)
-		if err := s.Append(entry); err != nil {
+		id, err := s.Append(entry)
+		if err != nil {
 			fmt.Printf("Error saving entry: %v\n", err)
 			os.Exit(1)
 		}
 
-		fmt.Println(successStyle.Render("✓") + " Entry added.")
+		fmt.Printf("%s Entry added (ID: %s)\n", successStyle.Render("✓"), id)
 	},
 }
 

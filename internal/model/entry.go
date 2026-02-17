@@ -3,6 +3,7 @@ package model
 import "time"
 
 type Entry struct {
+	ID        string    `json:"id"`
 	Timestamp time.Time `json:"timestamp"`
 	MarginKey string    `json:"margin_key,omitempty"`
 	Bullet    string    `json:"bullet"`

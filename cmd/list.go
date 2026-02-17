@@ -24,6 +24,7 @@ var (
 	bulletStyle    = lipgloss.NewStyle().Bold(true)
 	priorityStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#FF0000")).Bold(true)
 	noteStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("#EEEEEE"))
+	idStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("#555555")).Italic(true).Width(5)
 )
 
 var listCmd = &cobra.Command{
@@ -81,13 +82,14 @@ var listCmd = &cobra.Command{
 			mk := marginStyle.Render(e.MarginKey)
 			blt := bulletStyle.Render(e.Bullet)
 			cnt := noteStyle.Render(e.Content)
+			id := idStyle.Render(e.ID)
 
 			prio := ""
 			if e.Priority {
 				prio = priorityStyle.Render("!")
 			}
 
-			fmt.Printf("%s | %s | %s %s %s\n", ts, mk, blt, cnt, prio)
+			fmt.Printf("%s | %s | %s | %s %s %s\n", id, ts, mk, blt, cnt, prio)
 		}
 	},
 }
