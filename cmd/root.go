@@ -10,14 +10,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var Version = "dev"
+
 var successStyle = lipgloss.NewStyle().
 	Bold(true).
 	Foreground(lipgloss.Color("#04B575")).
 	Padding(0, 1)
 
 var rootCmd = &cobra.Command{
-	Use:   "rapide [margin-key] | [bullet] content",
-	Short: "Rapide is a fast CLI for Bullet Journal-style rapid logging.",
+	Use:     "rapide [margin-key] | [bullet] content",
+	Short:   "Rapide is a fast CLI for Bullet Journal-style rapid logging.",
+	Version: Version,
 	Long: `A Go port of Rapide, designed for fast journaling.
 Syntax: rapide [margin-key] | [bullet] content
 Example: rapide work | - Martin updated git repo`,
