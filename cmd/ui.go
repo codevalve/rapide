@@ -14,6 +14,7 @@ var (
 	priorityStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#FF0000")).Bold(true)
 	noteStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("#EEEEEE"))
 	idStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("#555555")).Italic(true).Width(5)
+	doneStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("#444444")).Strikethrough(true)
 )
 
 func renderEntry(e model.Entry) {
@@ -28,5 +29,10 @@ func renderEntry(e model.Entry) {
 		prio = priorityStyle.Render("!")
 	}
 
-	fmt.Printf("%s | %s | %s | %s %s %s\n", id, ts, mk, blt, cnt, prio)
+	output := fmt.Sprintf("%s | %s | %s | %s %s %s", id, ts, mk, blt, cnt, prio)
+	if e.Bullet == "x" {
+		output = doneStyle.Render(output)
+	}
+
+	fmt.Println(output)
 }

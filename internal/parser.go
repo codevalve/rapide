@@ -39,6 +39,15 @@ func ParseEntry(args []string) model.Entry {
 	} else if strings.HasPrefix(contentPart, "O ") {
 		entry.Bullet = "O"
 		entry.Content = strings.TrimPrefix(contentPart, "O ")
+	} else if strings.HasPrefix(contentPart, "x ") {
+		entry.Bullet = "x"
+		entry.Content = strings.TrimPrefix(contentPart, "x ")
+	} else if strings.HasPrefix(contentPart, "> ") {
+		entry.Bullet = ">"
+		entry.Content = strings.TrimPrefix(contentPart, "> ")
+	} else if strings.HasPrefix(contentPart, "< ") {
+		entry.Bullet = "<"
+		entry.Content = strings.TrimPrefix(contentPart, "< ")
 	} else if strings.HasPrefix(contentPart, "• ") {
 		entry.Bullet = "•"
 		entry.Content = strings.TrimPrefix(contentPart, "• ")
@@ -61,7 +70,7 @@ func ParseEntry(args []string) model.Entry {
 			case "AI", "A":
 				entry.Bullet = "AI"
 				entry.Content = words[1]
-			case "-", "O", "•", "*":
+			case "-", "O", "•", "*", "x", ">", "<":
 				entry.Bullet = words[0]
 				if entry.Bullet == "*" {
 					entry.Bullet = "•"
