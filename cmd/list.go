@@ -13,7 +13,8 @@ import (
 )
 
 var (
-	filterWork     bool
+	filterWork     bool // Deprecated or unused, keeping for now
+	filterMargin   string
 	filterPriority bool
 	timeFilter     string
 )
@@ -71,7 +72,12 @@ var listCmd = &cobra.Command{
 				continue
 			}
 
-			// Simple filter for margin key
+			// Filter by margin key
+			if filterMargin != "" && !strings.EqualFold(e.MarginKey, filterMargin) {
+				continue
+			}
+
+			// Simple filter for margin key (fallback for timeFilter)
 			if timeFilter != "" && !strings.HasSuffix(timeFilter, "d") && timeFilter != "today" {
 				if !strings.EqualFold(e.MarginKey, timeFilter) {
 					continue
@@ -95,7 +101,8 @@ var listCmd = &cobra.Command{
 }
 
 func init() {
-	listCmd.Flags().StringVarP(&timeFilter, "time", "t", "", "Time filter (3d, 7d, today) or margin key")
+	listCmd.Flags().StringVarP(&timeFilter, "time", "t", "", "Time filter (3d, 7d, today)")
+	listCmd.Flags().StringVarP(&filterMargin, "filter", "f", "", "Filter by margin key (e.g. work)")
 	listCmd.Flags().BoolVarP(&filterPriority, "priority", "p", false, "Filter by priority")
 	rootCmd.AddCommand(listCmd)
 }
