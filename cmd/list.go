@@ -20,8 +20,9 @@ var (
 )
 
 var listCmd = &cobra.Command{
-	Use:   "list",
+	Use:   "list [time/margin]",
 	Short: "List journal entries",
+	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		s, err := storage.NewStorage()
 		if err != nil {
@@ -39,6 +40,22 @@ var listCmd = &cobra.Command{
 		sort.Slice(entries, func(i, j int) bool {
 			return entries[i].Timestamp.After(entries[j].Timestamp)
 		})
+
+		// Handle positional argument
+		if len(args) > 0 {
+			arg := args[0]
+			// If it looks like a time filter (today or Nd), set timeFilter
+			if arg == "today" || strings.HasSuffix(arg, "d") {
+				if timeFilter == "" {
+					timeFilter = arg
+				}
+			} else {
+				// Otherwise treat as margin key
+				if filterMargin == "" {
+					filterMargin = arg
+				}
+			}
+		}
 
 		cutoff := time.Now().AddDate(0, 0, -30) // Default 30 days
 		if timeFilter != "" {
