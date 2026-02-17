@@ -4,21 +4,29 @@ A lightweight, dependency-minimal Go binary for Bullet Journal-style rapid loggi
 
 ## Installation
 
+### Homebrew (Coming Soon)
+
 ```bash
-go build -o rapide
+brew tap codevalve/tap
+brew install rapide
+```
+
+### Go Install
+
+```bash
+go install github.com/codevalve/rapide@latest
 ```
 
 ## Usage
 
-### Adding Entries
+### Logging
 
 Syntax: `rapide [margin-key] | [bullet] content [!]`
 
-- **Note**: `- content`
-- **Task**: `• content` or just `content`
-- **Event**: `O content`
-- **Action Item**: `AI content` or `A content`
-- **Priority**: Add `!` at the end
+- **Task (`•`)**: `rapide "• Buy coffee"` (or just `rapide "Buy coffee"`)
+- **Note (`-`)**: `rapide "- Review PR"`
+- **Event (`O`)**: `rapide "O Meeting @ 2pm"`
+- **Priority**: Append `!` to any entry to mark it important.
 
 **Examples:**
 ```bash
@@ -27,9 +35,6 @@ rapide personal | O Lunch with the team!
 rapide "• Fix the login bug!!"
 ```
 
-### Listing Entries
-
-```bash
 rapide list
 rapide list --time 3d
 rapide list --priority
