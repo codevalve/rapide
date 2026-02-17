@@ -14,6 +14,7 @@ import (
 var (
 	filterWork     bool // Deprecated or unused, keeping for now
 	filterMargin   string
+	filterBullet   string
 	filterPriority bool
 	timeFilter     string
 )
@@ -62,6 +63,11 @@ var listCmd = &cobra.Command{
 				continue
 			}
 
+			// Filter by bullet type
+			if filterBullet != "" && !strings.EqualFold(e.Bullet, filterBullet) {
+				continue
+			}
+
 			// Filter by margin key
 			if filterMargin != "" && !strings.EqualFold(e.MarginKey, filterMargin) {
 				continue
@@ -82,6 +88,8 @@ var listCmd = &cobra.Command{
 func init() {
 	listCmd.Flags().StringVarP(&timeFilter, "time", "t", "", "Time filter (3d, 7d, today)")
 	listCmd.Flags().StringVarP(&filterMargin, "filter", "f", "", "Filter by margin key (e.g. work)")
+	listCmd.Flags().StringVarP(&filterBullet, "bullet", "b", "", "Filter by bullet type (e.g. -, O, •, x)")
+	listCmd.Flags().StringVarP(&filterBullet, "type", "", "", "Alias for --bullet")
 	listCmd.Flags().BoolVarP(&filterPriority, "priority", "p", false, "Filter by priority")
 	rootCmd.AddCommand(listCmd)
 }
