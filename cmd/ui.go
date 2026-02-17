@@ -34,7 +34,7 @@ func renderEntry(e model.Entry) {
 		mk := doneStyle.Render(fmt.Sprintf("%-12s", rawMK))
 		blt := doneStyle.Render(rawBlt)
 		cnt := doneStyle.Render(rawCnt)
-		id := doneStyle.Render(fmt.Sprintf("%-4s", rawID))
+		id := doneStyle.Render(fmt.Sprintf("%-5s", rawID))
 		prio := doneStyle.Render(rawPrio)
 		fmt.Printf("%s | %s | %s | %s %s %s\n", id, ts, mk, blt, cnt, prio)
 		return
