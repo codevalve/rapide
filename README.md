@@ -30,15 +30,19 @@ Syntax: `rapide [margin-key] | [bullet] content [!]`
 
 **Examples:**
 ```bash
-rapide work | - Finished the first draft of the Go port!
-rapide personal | O Lunch with the team!
+rapide "work | - Finished the first draft of the Go port!"
+rapide "personal | O Lunch with the team!"
 rapide "• Fix the login bug!!"
 ```
 
+### Commands
+
+```bash
 rapide list
-rapide list --time 3d
-rapide list --priority
-rapide list --time today
+rapide list today
+rapide list work
+rapide unfinished
+rapide collections
 ```
 
 ## Storage
