@@ -1,0 +1,53 @@
+package cmd
+
+import (
+	"fmt"
+	"os"
+	"rapide/internal"
+	"rapide/internal/storage"
+
+	"github.com/charmbracelet/lipgloss"
+	"github.com/spf13/cobra"
+)
+
+var successStyle = lipgloss.NewStyle().
+	Bold(true).
+	Foreground(lipgloss.Color("#04B575")).
+	Padding(0, 1)
+
+var rootCmd = &cobra.Command{
+	Use:   "rapide [margin-key] | [bullet] content",
+	Short: "Rapide is a fast CLI for Bullet Journal-style rapid logging.",
+	Long: `A Go port of Rapide, designed for fast journaling.
+Syntax: rapide [margin-key] | [bullet] content
+Example: rapide work | - Martin updated git repo`,
+	Args: cobra.MinimumNArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		// Default action is to add an entry
+		if args[0] == "list" {
+			// This will be handled by the list subcommand
+			return
+		}
+
+		s, err := storage.NewStorage()
+		if err != nil {
+			fmt.Printf("Error initializing storage: %v\n", err)
+			os.Exit(1)
+		}
+
+		entry := internal.ParseEntry(args)
+		if err := s.Append(entry); err != nil {
+			fmt.Printf("Error saving entry: %v\n", err)
+			os.Exit(1)
+		}
+
+		fmt.Println(successStyle.Render("✓") + " Entry added.")
+	},
+}
+
+func Execute() {
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
