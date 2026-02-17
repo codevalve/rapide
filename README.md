@@ -4,10 +4,10 @@ A lightweight, dependency-minimal Go binary for Bullet Journal-style rapid loggi
 
 ## Installation
 
-### Homebrew (Coming Soon)
+### Homebrew
 
 ```bash
-brew tap codevalve/tap
+brew tap codevalve/homebrew-tap
 brew install rapide
 ```
 

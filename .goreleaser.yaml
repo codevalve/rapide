@@ -46,6 +46,7 @@ brews:
     repository:
       owner: codevalve
       name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
     directory: Formula
     homepage: "https://github.com/codevalve/rapide"
     description: "Lightweight CLI for Bullet Journal-style rapid logging."
