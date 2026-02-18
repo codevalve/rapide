@@ -17,6 +17,23 @@ brew install rapide
 go install github.com/codevalve/rapide@latest
 ```
 
+## Interactive TUI 🗿
+
+Rapide v2.0 introduces a state-of-the-art Terminal User Interface. Run it with:
+
+```bash
+rapide tui
+```
+
+### Key Hotkeys
+- **`/`**: Real-time filtering (search by content, collection, or ID)
+- **`n`**: Create a new entry without leaving the TUI
+- **`d`**: Toggle task completion (`x`)
+- **`m`**: Migrate task to today (`>`)
+- **`x`**: Delete entry
+- **`T`**: Surgical trim (archive/delete entries before a specific date)
+- **`q`**: Quit
+
 ## Usage
 
 ### Logging
@@ -27,27 +44,22 @@ Syntax: `rapide [margin-key] | [bullet] content [!]`
 - **Note (`-`)**: `rapide "- Review PR"`
 - **Event (`O`)**: `rapide "O Meeting @ 2pm"`
 - **Priority**: Append `!` to any entry to mark it important.
-
-**Examples:**
-```bash
-rapide "work | - Finished the first draft of the Go port!"
-rapide "personal | O Lunch with the team!"
-rapide "• Fix the login bug!!"
-```
+- **Short IDs**: Every entry has a unique 4-character ID (displayed in `list` and `tui`).
 
 ### Commands
 
 | Command | Usage | Description |
 | :--- | :--- | :--- |
+| **`tui`** | `rapide tui` | **New!** Enter the interactive terminal interface |
 | **`list`** | `rapide list [today/3d/work]` | List entries (filtered by time or collection) |
 | **`done`** | `rapide done <id>` | Mark a task as completed (`x`) |
 | **`migrate`** | `rapide migrate <id>` | Move a task to today and mark original as migrated (`>`) |
 | **`unfinished`**| `rapide unfinished` | List all non-completed tasks (`•`) |
 | **`collections`**| `rapide collections` | See list of margin keys and item counts |
-| **`search`** | `rapide search <query>` | Search all entries for a keyword |
+| **`search`** | `rapide search <query>` | Search all entries for a keyword or ID |
 | **`edit`** | `rapide edit <id> <text>` | Update the content of an existing entry |
 | **`delete`** | `rapide delete <id>` | Permanently remove an entry |
-| **`trim`** | `rapide trim [--before YYYY-MM-DD]` | Archive or delete old logs to keep it clean |
+| **`trim`** | `rapide trim [--before DATE]` | Archive or delete old logs with confirmation |
 | **`version`** | `rapide version` | Show current version |
 
 #### Command Details
