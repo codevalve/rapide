@@ -10,10 +10,13 @@ import (
 )
 
 type modelState struct {
-	entries []model.Entry
-	cursor  int
-	err     error
-	ready   bool
+	entries    []model.Entry
+	cursor     int
+	startIndex int
+	width      int
+	height     int
+	err        error
+	ready      bool
 }
 
 func (m modelState) Init() tea.Cmd {
@@ -22,6 +25,11 @@ func (m modelState) Init() tea.Cmd {
 
 func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
+		m.ready = true
+
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
@@ -29,10 +37,20 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "up", "k":
 			if m.cursor > 0 {
 				m.cursor--
+				if m.cursor < m.startIndex {
+					m.startIndex = m.cursor
+				}
 			}
 		case "down", "j":
 			if m.cursor < len(m.entries)-1 {
 				m.cursor++
+				visibleHeight := m.height - 8 // Header + Footer approximate height
+				if visibleHeight < 1 {
+					visibleHeight = 1
+				}
+				if m.cursor >= m.startIndex+visibleHeight {
+					m.startIndex = m.cursor - visibleHeight + 1
+				}
 			}
 		}
 	}
@@ -53,9 +71,23 @@ func (m modelState) View() string {
 		TitleStyle.Render("RAPIDE") + "  " + DimmedStyle.Strikethrough(false).Render("Project Rapanui"),
 	)
 
+	// Calculate visible area for the list
+	// Header is ~4 lines, Footer is ~3 lines, + padding
+	reservedHeight := 7
+	visibleHeight := m.height - reservedHeight
+	if visibleHeight < 1 {
+		visibleHeight = 1
+	}
+
 	// List of entries
 	var content string
-	for i, entry := range m.entries {
+	endIndex := m.startIndex + visibleHeight
+	if endIndex > len(m.entries) {
+		endIndex = len(m.entries)
+	}
+
+	for i := m.startIndex; i < endIndex; i++ {
+		entry := m.entries[i]
 		style := EntryStyle
 		if i == m.cursor {
 			style = SelectedEntryStyle
@@ -89,11 +121,16 @@ func (m modelState) View() string {
 		}
 
 		line := fmt.Sprintf("%s %s", bulletStr, contentStr)
-		content += style.Render(line) + "\n"
+		content += style.Width(m.width-4).Render(line) + "\n"
+	}
+
+	// Padding to keep the footer pinned if list is short
+	for i := (endIndex - m.startIndex); i < visibleHeight; i++ {
+		content += "\n"
 	}
 
 	// Footer
-	footer := StatusLineStyle.Render(
+	footer := StatusLineStyle.Width(m.width - 4).Render(
 		fmt.Sprintf("%d entries • %s navigate • %s quit",
 			len(m.entries),
 			KeyStyle.Render("j/k"),
@@ -116,6 +153,6 @@ func InitialModel() modelState {
 
 	return modelState{
 		entries: entries,
-		ready:   true,
+		ready:   false, // Wait for first WindowSizeMsg
 	}
 }
