@@ -411,12 +411,14 @@ func (m modelState) View() string {
 	footer := StatusLineStyle.Width(m.width - 4).Render(footerStatus)
 
 	// Combine everything
-	return AppStyle.Render(lipgloss.JoinVertical(lipgloss.Left,
+	finalView := lipgloss.JoinVertical(lipgloss.Left,
 		header,
 		hr,
 		content,
 		footer,
-	))
+	)
+
+	return AppStyle.Render(finalView)
 }
 
 func InitialModel() modelState {
