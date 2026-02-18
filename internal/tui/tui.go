@@ -262,13 +262,16 @@ func (m modelState) View() string {
 				shortID = DimmedIDStyle.Render(fmt.Sprintf("[%s]", entry.ID[:4]))
 			}
 
+			// Add Timestamp
+			tsStr := TimestampStyle.Render(entry.Timestamp.Format("02 Jan 15:04"))
+
 			// Add MarginKey
 			marginStr := ""
 			if entry.MarginKey != "" {
 				marginStr = MarginKeyStyle.Render(entry.MarginKey) + " "
 			}
 
-			line := fmt.Sprintf("%-6s %s%s %s", shortID, marginStr, bulletStr, contentStr)
+			line := fmt.Sprintf("%-6s %s  %s%s %s", shortID, tsStr, marginStr, bulletStr, contentStr)
 			contentLines = append(contentLines, style.Width(m.width-4).Render(line))
 		}
 	}

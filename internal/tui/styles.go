@@ -50,6 +50,10 @@ var (
 			Foreground(PrimaryColor).
 			Bold(true)
 
+	TimestampStyle = lipgloss.NewStyle().
+			Foreground(SecondaryColor).
+			Faint(true)
+
 	StatusLineStyle = lipgloss.NewStyle().
 			Foreground(SecondaryColor).
 			BorderStyle(lipgloss.NormalBorder()).
