@@ -24,8 +24,10 @@ type modelState struct {
 	filterInput string
 	creating    bool
 	createInput string
-	trimStep    int    // 0: none, 1: choose a/d, 2: confirm y/n
-	trimAction  string // "archive" or "delete"
+	trimStep    int       // 0: none, 1: date input, 2: choose a/d, 3: confirm y/n
+	trimAction  string    // "archive" or "delete"
+	trimInput   string    // raw date input
+	trimDate    time.Time // parsed cutoff
 }
 
 func (m modelState) Init() tea.Cmd {
@@ -65,35 +67,60 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch msg.String() {
 			case "esc":
 				m.trimStep = 0
+				m.trimInput = ""
 				m.trimAction = ""
-			case "a", "A":
+			case "backspace":
+				if m.trimStep == 1 && len(m.trimInput) > 0 {
+					m.trimInput = m.trimInput[:len(m.trimInput)-1]
+				}
+			case "enter":
 				if m.trimStep == 1 {
+					if m.trimInput == "" {
+						m.trimDate = time.Now().Truncate(24 * time.Hour)
+						m.trimStep = 2
+					} else {
+						d, err := time.Parse("2006-01-02", m.trimInput)
+						if err != nil {
+							m.err = fmt.Errorf("invalid date format: use YYYY-MM-DD")
+							return m, nil
+						}
+						m.trimDate = time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, time.Local)
+						m.trimStep = 2
+					}
+				}
+			case "a", "A":
+				if m.trimStep == 2 {
 					m.trimAction = "archive"
-					m.trimStep = 2
+					m.trimStep = 3
 				}
 			case "d", "D":
-				if m.trimStep == 1 {
+				if m.trimStep == 2 {
 					m.trimAction = "delete"
-					m.trimStep = 2
+					m.trimStep = 3
 				}
 			case "y", "Y":
-				if m.trimStep == 2 {
+				if m.trimStep == 3 {
 					s, _ := storage.NewStorage()
-					cutoff := time.Now().Truncate(24 * time.Hour)
 					if m.trimAction == "archive" {
-						s.ArchiveBefore(cutoff)
+						s.ArchiveBefore(m.trimDate)
 					} else {
-						s.TrimBefore(cutoff)
+						s.TrimBefore(m.trimDate)
 					}
 					m.entries, _ = s.List()
 					m.trimStep = 0
+					m.trimInput = ""
 					m.trimAction = ""
 					m.cursor = 0
 					m.startIndex = 0
 				}
 			case "n", "N":
 				m.trimStep = 0
+				m.trimInput = ""
 				m.trimAction = ""
+			default:
+				if m.trimStep == 1 && len(msg.String()) == 1 {
+					m.trimInput += msg.String()
+				}
 			}
 			return m, nil
 		}
@@ -160,6 +187,8 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		case "T":
 			m.trimStep = 1
+			m.trimInput = ""
+			m.err = nil
 			return m, nil
 		case "esc":
 			m.filterInput = "" // Clear filter
@@ -328,13 +357,16 @@ func (m modelState) View() string {
 	var footerStatus string
 	if m.trimStep == 1 {
 		footerStatus = fmt.Sprintf("%s %s",
-			SearchPromptStyle.Render("TRIM:"),
-			SearchStyle.Render("(a)rchive or (d)elete entries before today?"))
+			SearchPromptStyle.Render("TRIM before (YYYY-MM-DD or ENTER for Today):"),
+			SearchStyle.Render(m.trimInput+"_"))
 	} else if m.trimStep == 2 {
-		cutoff := time.Now().Truncate(24 * time.Hour)
+		footerStatus = fmt.Sprintf("%s %s",
+			SearchPromptStyle.Render("TRIM ACTION:"),
+			SearchStyle.Render("(a)rchive or (d)elete?"))
+	} else if m.trimStep == 3 {
 		count := 0
 		for _, e := range m.entries {
-			if e.Timestamp.Before(cutoff) {
+			if e.Timestamp.Before(m.trimDate) {
 				count++
 			}
 		}
@@ -342,9 +374,11 @@ func (m modelState) View() string {
 		if m.trimAction == "delete" {
 			actionStr = "DELETE"
 		}
-		footerStatus = fmt.Sprintf("%s %d entries before today? (y/n)",
+		dateStr := m.trimDate.Format("2006-01-02")
+		footerStatus = fmt.Sprintf("%s %d entries before %s? (y/n)",
 			SearchPromptStyle.Render(fmt.Sprintf("Confirm %s", actionStr)),
-			count)
+			count,
+			KeyStyle.Render(dateStr))
 	} else if m.creating {
 		footerStatus = fmt.Sprintf("%s %s",
 			SearchPromptStyle.Render("NEW ENTRY (e.g. • task):"),
