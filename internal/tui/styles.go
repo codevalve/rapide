@@ -3,12 +3,12 @@ package tui
 import "github.com/charmbracelet/lipgloss"
 
 var (
-	// Project Rapanui Colors
-	PrimaryColor   = lipgloss.Color("#00ADDB") // Rapide Blue
-	SecondaryColor = lipgloss.Color("#555555") // Dimmed Grey
-	HighlightColor = lipgloss.Color("#FFD700") // Gold for selection
-	ErrorColor     = lipgloss.Color("#FF0000")
-	AccentColor    = lipgloss.Color("#FF8C00") // Orange for Priority
+	// Project Rapanui Colors (Safe ANSI variants)
+	PrimaryColor   = lipgloss.Color("6")   // Cyan
+	SecondaryColor = lipgloss.Color("8")   // Grey
+	HighlightColor = lipgloss.Color("3")   // Yellow/Gold
+	ErrorColor     = lipgloss.Color("9")   // Bright Red
+	AccentColor    = lipgloss.Color("208") // Orange/Amber
 
 	// Bullet Colors
 	TaskColor     = lipgloss.Color("#FFFFFF") // White
@@ -56,6 +56,10 @@ var (
 	KeyStyle = lipgloss.NewStyle().
 			Foreground(PrimaryColor).
 			Bold(true)
+
+	DimmedIDStyle = lipgloss.NewStyle().
+			Foreground(SecondaryColor).
+			Faint(true)
 
 	SearchStyle = lipgloss.NewStyle().
 			Foreground(HighlightColor).

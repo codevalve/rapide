@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	bujo "rapide/internal"
 	"rapide/internal/model"
 	"rapide/internal/storage"
 	"strings"
@@ -21,6 +22,8 @@ type modelState struct {
 	ready       bool
 	filtering   bool
 	filterInput string
+	creating    bool
+	createInput string
 }
 
 func (m modelState) Init() tea.Cmd {
@@ -34,8 +37,13 @@ func (m modelState) getFilteredEntries() []model.Entry {
 	var filtered []model.Entry
 	query := strings.ToLower(m.filterInput)
 	for _, e := range m.entries {
+		shortID := ""
+		if len(e.ID) >= 4 {
+			shortID = e.ID[:4]
+		}
 		if strings.Contains(strings.ToLower(e.Content), query) ||
-			strings.Contains(strings.ToLower(e.Bullet), query) {
+			strings.Contains(strings.ToLower(e.Bullet), query) ||
+			strings.Contains(strings.ToLower(shortID), query) {
 			filtered = append(filtered, e)
 		}
 	}
@@ -50,6 +58,36 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.ready = true
 
 	case tea.KeyMsg:
+		if m.creating {
+			switch msg.String() {
+			case "esc":
+				m.creating = false
+				m.createInput = ""
+			case "enter":
+				if m.createInput != "" {
+					entry := bujo.ParseEntry([]string{m.createInput})
+					s, _ := storage.NewStorage()
+					s.Append(entry)
+					m.entries, _ = s.List()
+					m.creating = false
+					m.createInput = ""
+					// Move cursor to bottom where new entry is
+					m.cursor = len(m.entries) - 1
+				} else {
+					m.creating = false
+				}
+			case "backspace":
+				if len(m.createInput) > 0 {
+					m.createInput = m.createInput[:len(m.createInput)-1]
+				}
+			default:
+				if len(msg.String()) == 1 {
+					m.createInput += msg.String()
+				}
+			}
+			return m, nil
+		}
+
 		if m.filtering {
 			switch msg.String() {
 			case "esc", "enter":
@@ -75,6 +113,10 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "/":
 			m.filtering = true
+			return m, nil
+		case "n":
+			m.creating = true
+			m.createInput = ""
 			return m, nil
 		case "esc":
 			m.filterInput = "" // Clear filter
@@ -213,7 +255,13 @@ func (m modelState) View() string {
 				contentStr = DimmedStyle.Strikethrough(true).Render(entry.Content)
 			}
 
-			line := fmt.Sprintf("%s %s", bulletStr, contentStr)
+			// Add short ID
+			shortID := ""
+			if len(entry.ID) >= 4 {
+				shortID = DimmedIDStyle.Render(fmt.Sprintf("[%s]", entry.ID[:4]))
+			}
+
+			line := fmt.Sprintf("%-6s %s %s", shortID, bulletStr, contentStr)
 			contentLines = append(contentLines, style.Width(m.width-4).Render(line))
 		}
 	}
@@ -226,7 +274,11 @@ func (m modelState) View() string {
 
 	// Dynamic Footer / Status Bar
 	var footerStatus string
-	if m.filtering {
+	if m.creating {
+		footerStatus = fmt.Sprintf("%s %s",
+			SearchPromptStyle.Render("NEW ENTRY (e.g. • task):"),
+			SearchStyle.Render(m.createInput+"_"))
+	} else if m.filtering {
 		footerStatus = fmt.Sprintf("%s %s",
 			SearchPromptStyle.Render("FIND:"),
 			SearchStyle.Render(m.filterInput+"_"))
@@ -235,8 +287,9 @@ func (m modelState) View() string {
 		if m.filterInput != "" {
 			countInfo = fmt.Sprintf("%d/%d found", len(filtered), len(m.entries))
 		}
-		footerStatus = fmt.Sprintf("%s • %s filter • %s done • %s migrate • %s delete • %s navigate • %s quit",
+		footerStatus = fmt.Sprintf("%s • %s new • %s filter • %s done • %s migrate • %s delete • %s navigate • %s quit",
 			countInfo,
+			KeyStyle.Render("n"),
 			KeyStyle.Render("/"),
 			KeyStyle.Render("d"),
 			KeyStyle.Render("m"),
