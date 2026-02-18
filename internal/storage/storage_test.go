@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"rapide/internal/model"
 	"testing"
+	"time"
 )
 
 func TestStorage(t *testing.T) {
@@ -54,5 +55,81 @@ func TestStorage(t *testing.T) {
 	entries, _ = s.List()
 	if entries[0].Content != "Updated content" {
 		t.Errorf("expected content 'Updated content', got '%s'", entries[0].Content)
+	}
+
+	// Test Delete
+	err = s.Delete(id)
+	if err != nil {
+		t.Fatalf("Delete failed: %v", err)
+	}
+	entries, _ = s.List()
+	if len(entries) != 0 {
+		t.Errorf("expected 0 entries, got %d", len(entries))
+	}
+}
+
+func TestTrimAndArchive(t *testing.T) {
+	tmpDir, err := os.MkdirTemp("", "rapide-trim-test-*")
+	if err != nil {
+		t.Fatalf("failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	dbPath := filepath.Join(tmpDir, "entries.jsonl")
+	s := &Storage{FilePath: dbPath}
+
+	now := time.Now()
+	oldDate := now.AddDate(0, 0, -10)
+	newDate := now.AddDate(0, 0, 10)
+
+	// Add old and new entries
+	s.Append(model.Entry{Content: "old item", Timestamp: oldDate})
+	s.Append(model.Entry{Content: "new item", Timestamp: newDate})
+
+	// Test Trim
+	cutoff := now
+	count, err := s.TrimBefore(cutoff)
+	if err != nil {
+		t.Fatalf("TrimBefore failed: %v", err)
+	}
+	if count != 1 {
+		t.Errorf("expected 1 item trimmed, got %d", count)
+	}
+
+	entries, _ := s.List()
+	if len(entries) != 1 {
+		t.Errorf("expected 1 item remaining, got %d", len(entries))
+	}
+	if entries[0].Content != "new item" {
+		t.Errorf("expected 'new item' to remain, got '%s'", entries[0].Content)
+	}
+
+	// Reset for Archive test
+	os.Remove(dbPath)
+	s.Append(model.Entry{Content: "old archive item", Timestamp: oldDate})
+	s.Append(model.Entry{Content: "new item", Timestamp: newDate})
+
+	// Test Archive
+	count, filename, err := s.ArchiveBefore(cutoff)
+	if err != nil {
+		t.Fatalf("ArchiveBefore failed: %v", err)
+	}
+	if count != 1 {
+		t.Errorf("expected 1 item archived, got %d", count)
+	}
+	if filename == "" {
+		t.Error("expected non-empty archive filename")
+	}
+
+	// Verify archive file exists
+	archivePath := filepath.Join(tmpDir, filename)
+	if _, err := os.Stat(archivePath); os.IsNotExist(err) {
+		t.Errorf("expected archive file %s to exist", archivePath)
+	}
+
+	// Verify entries remaining
+	entries, _ = s.List()
+	if len(entries) != 1 {
+		t.Errorf("expected 1 item remaining in main log, got %d", len(entries))
 	}
 }
