@@ -24,6 +24,7 @@ type modelState struct {
 	filterInput string
 	creating    bool
 	createInput string
+	trimming    bool
 }
 
 func (m modelState) Init() tea.Cmd {
@@ -59,6 +60,21 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.ready = true
 
 	case tea.KeyMsg:
+		if m.trimming {
+			switch msg.String() {
+			case "y", "Y":
+				s, _ := storage.NewStorage()
+				s.ArchiveCompleted()
+				m.entries, _ = s.List()
+				m.trimming = false
+				m.cursor = 0
+				m.startIndex = 0
+			case "n", "N", "esc":
+				m.trimming = false
+			}
+			return m, nil
+		}
+
 		if m.creating {
 			switch msg.String() {
 			case "esc":
@@ -118,6 +134,9 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "n":
 			m.creating = true
 			m.createInput = ""
+			return m, nil
+		case "T":
+			m.trimming = true
 			return m, nil
 		case "esc":
 			m.filterInput = "" // Clear filter
@@ -284,7 +303,11 @@ func (m modelState) View() string {
 
 	// Dynamic Footer / Status Bar
 	var footerStatus string
-	if m.creating {
+	if m.trimming {
+		footerStatus = fmt.Sprintf("%s %s",
+			SearchPromptStyle.Render("ARCHIVE ALL COMPLETED/MIGRATED?"),
+			SearchStyle.Render("(y/n)"))
+	} else if m.creating {
 		footerStatus = fmt.Sprintf("%s %s",
 			SearchPromptStyle.Render("NEW ENTRY (e.g. • task):"),
 			SearchStyle.Render(m.createInput+"_"))
@@ -297,10 +320,11 @@ func (m modelState) View() string {
 		if m.filterInput != "" {
 			countInfo = fmt.Sprintf("%d/%d found", len(filtered), len(m.entries))
 		}
-		footerStatus = fmt.Sprintf("%s • %s new • %s filter • %s done • %s migrate • %s delete • %s navigate • %s quit",
+		footerStatus = fmt.Sprintf("%s • %s new • %s filter • %s trim • %s done • %s migrate • %s delete • %s navigate • %s quit",
 			countInfo,
 			KeyStyle.Render("n"),
 			KeyStyle.Render("/"),
+			KeyStyle.Render("T"),
 			KeyStyle.Render("d"),
 			KeyStyle.Render("m"),
 			KeyStyle.Render("x"),

@@ -141,6 +141,51 @@ func (s *Storage) saveAll(entries []model.Entry) error {
 	return nil
 }
 
+func (s *Storage) ArchiveCompleted() (int, string, error) {
+	entries, err := s.List()
+	if err != nil {
+		return 0, "", err
+	}
+
+	var toKeep, toArchive []model.Entry
+	for _, e := range entries {
+		if e.Bullet == "x" || e.Bullet == ">" {
+			toArchive = append(toArchive, e)
+		} else {
+			toKeep = append(toKeep, e)
+		}
+	}
+
+	if len(toArchive) == 0 {
+		return 0, "", nil
+	}
+
+	archiveName := fmt.Sprintf("archive_completed_%s.jsonl", time.Now().Format("20060102_150405"))
+	archivePath := filepath.Join(filepath.Dir(s.FilePath), archiveName)
+
+	archiveFile, err := os.Create(archivePath)
+	if err != nil {
+		return 0, "", err
+	}
+	defer archiveFile.Close()
+
+	for _, e := range toArchive {
+		data, err := json.Marshal(e)
+		if err != nil {
+			return 0, "", err
+		}
+		if _, err := archiveFile.Write(append(data, '\n')); err != nil {
+			return 0, "", err
+		}
+	}
+
+	if err := s.saveAll(toKeep); err != nil {
+		return 0, "", err
+	}
+
+	return len(toArchive), archiveName, nil
+}
+
 func (s *Storage) ArchiveBefore(cutoff time.Time) (int, string, error) {
 	entries, err := s.List()
 	if err != nil {
