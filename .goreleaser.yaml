@@ -1,5 +1,7 @@
 # .goreleaser.yaml
 version: 2
+release:
+  replace: true
 
 before:
   hooks:
