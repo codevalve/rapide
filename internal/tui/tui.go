@@ -24,7 +24,8 @@ type modelState struct {
 	filterInput string
 	creating    bool
 	createInput string
-	trimming    bool
+	trimStep    int    // 0: none, 1: choose a/d, 2: confirm y/n
+	trimAction  string // "archive" or "delete"
 }
 
 func (m modelState) Init() tea.Cmd {
@@ -60,17 +61,39 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.ready = true
 
 	case tea.KeyMsg:
-		if m.trimming {
+		if m.trimStep > 0 {
 			switch msg.String() {
+			case "esc":
+				m.trimStep = 0
+				m.trimAction = ""
+			case "a", "A":
+				if m.trimStep == 1 {
+					m.trimAction = "archive"
+					m.trimStep = 2
+				}
+			case "d", "D":
+				if m.trimStep == 1 {
+					m.trimAction = "delete"
+					m.trimStep = 2
+				}
 			case "y", "Y":
-				s, _ := storage.NewStorage()
-				s.ArchiveCompleted()
-				m.entries, _ = s.List()
-				m.trimming = false
-				m.cursor = 0
-				m.startIndex = 0
-			case "n", "N", "esc":
-				m.trimming = false
+				if m.trimStep == 2 {
+					s, _ := storage.NewStorage()
+					cutoff := time.Now().Truncate(24 * time.Hour)
+					if m.trimAction == "archive" {
+						s.ArchiveBefore(cutoff)
+					} else {
+						s.TrimBefore(cutoff)
+					}
+					m.entries, _ = s.List()
+					m.trimStep = 0
+					m.trimAction = ""
+					m.cursor = 0
+					m.startIndex = 0
+				}
+			case "n", "N":
+				m.trimStep = 0
+				m.trimAction = ""
 			}
 			return m, nil
 		}
@@ -136,7 +159,7 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.createInput = ""
 			return m, nil
 		case "T":
-			m.trimming = true
+			m.trimStep = 1
 			return m, nil
 		case "esc":
 			m.filterInput = "" // Clear filter
@@ -303,10 +326,25 @@ func (m modelState) View() string {
 
 	// Dynamic Footer / Status Bar
 	var footerStatus string
-	if m.trimming {
+	if m.trimStep == 1 {
 		footerStatus = fmt.Sprintf("%s %s",
-			SearchPromptStyle.Render("ARCHIVE ALL COMPLETED/MIGRATED?"),
-			SearchStyle.Render("(y/n)"))
+			SearchPromptStyle.Render("TRIM:"),
+			SearchStyle.Render("(a)rchive or (d)elete entries before today?"))
+	} else if m.trimStep == 2 {
+		cutoff := time.Now().Truncate(24 * time.Hour)
+		count := 0
+		for _, e := range m.entries {
+			if e.Timestamp.Before(cutoff) {
+				count++
+			}
+		}
+		actionStr := "archive"
+		if m.trimAction == "delete" {
+			actionStr = "DELETE"
+		}
+		footerStatus = fmt.Sprintf("%s %d entries before today? (y/n)",
+			SearchPromptStyle.Render(fmt.Sprintf("Confirm %s", actionStr)),
+			count)
 	} else if m.creating {
 		footerStatus = fmt.Sprintf("%s %s",
 			SearchPromptStyle.Render("NEW ENTRY (e.g. • task):"),
