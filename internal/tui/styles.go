@@ -46,6 +46,10 @@ var (
 	PriorityStyle = lipgloss.NewStyle().Foreground(AccentColor).Bold(true)
 	DimmedStyle   = lipgloss.NewStyle().Foreground(SecondaryColor).Strikethrough(true)
 
+	MarginKeyStyle = lipgloss.NewStyle().
+			Foreground(PrimaryColor).
+			Bold(true)
+
 	StatusLineStyle = lipgloss.NewStyle().
 			Foreground(SecondaryColor).
 			BorderStyle(lipgloss.NormalBorder()).

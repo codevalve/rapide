@@ -43,6 +43,7 @@ func (m modelState) getFilteredEntries() []model.Entry {
 		}
 		if strings.Contains(strings.ToLower(e.Content), query) ||
 			strings.Contains(strings.ToLower(e.Bullet), query) ||
+			strings.Contains(strings.ToLower(e.MarginKey), query) ||
 			strings.Contains(strings.ToLower(shortID), query) {
 			filtered = append(filtered, e)
 		}
@@ -261,7 +262,13 @@ func (m modelState) View() string {
 				shortID = DimmedIDStyle.Render(fmt.Sprintf("[%s]", entry.ID[:4]))
 			}
 
-			line := fmt.Sprintf("%-6s %s %s", shortID, bulletStr, contentStr)
+			// Add MarginKey
+			marginStr := ""
+			if entry.MarginKey != "" {
+				marginStr = MarginKeyStyle.Render(entry.MarginKey) + " "
+			}
+
+			line := fmt.Sprintf("%-6s %s%s %s", shortID, marginStr, bulletStr, contentStr)
 			contentLines = append(contentLines, style.Width(m.width-4).Render(line))
 		}
 	}
