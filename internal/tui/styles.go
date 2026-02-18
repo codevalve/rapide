@@ -25,17 +25,11 @@ var (
 			Bold(true)
 
 	HeaderStyle = lipgloss.NewStyle().
-			Foreground(PrimaryColor).
-			Bold(true).
-			BorderStyle(lipgloss.NormalBorder()).
-			BorderBottom(true).
-			PaddingBottom(1).
-			MarginBottom(1)
+			PaddingLeft(2).
+			Bold(true)
 
 	TitleStyle = lipgloss.NewStyle().
-			Background(PrimaryColor).
-			Foreground(lipgloss.Color("#000000")).
-			Padding(0, 1).
+			Foreground(PrimaryColor).
 			Bold(true)
 
 	EntryStyle = lipgloss.NewStyle().

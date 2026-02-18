@@ -8,6 +8,7 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type modelState struct {
@@ -156,12 +157,15 @@ func (m modelState) View() string {
 	}
 
 	// Header
-	header := HeaderStyle.Render(
-		TitleStyle.Render("RAPIDE") + "  " + DimmedStyle.Strikethrough(false).Render("Project Rapanui"),
-	)
+	title := TitleStyle.Render("RAPIDE")
+	subtitle := DimmedStyle.Strikethrough(false).Render("Project Rapanui")
+	header := lipgloss.JoinHorizontal(lipgloss.Bottom, title, "  ", subtitle)
+
+	line := strings.Repeat("─", m.width-4)
+	hr := DimmedStyle.Strikethrough(false).Render(line)
 
 	// Calculate visible area for the list
-	reservedHeight := 7
+	reservedHeight := 6 // Title line + HR line + Footer block
 	visibleHeight := m.height - reservedHeight
 	if visibleHeight < 1 {
 		visibleHeight = 1
@@ -169,14 +173,14 @@ func (m modelState) View() string {
 
 	// List of entries
 	filtered := m.getFilteredEntries()
-	var content string
+	var contentLines []string
 	endIndex := m.startIndex + visibleHeight
 	if endIndex > len(filtered) {
 		endIndex = len(filtered)
 	}
 
 	if len(filtered) == 0 {
-		content = "\n  No entries found matching search query.\n"
+		contentLines = append(contentLines, "\n  No entries found matching search query.\n")
 	} else {
 		for i := m.startIndex; i < endIndex; i++ {
 			entry := filtered[i]
@@ -206,18 +210,19 @@ func (m modelState) View() string {
 
 			if entry.Bullet == "x" {
 				bulletStr = DimmedStyle.Render("x")
-				contentStr = DimmedStyle.Render(entry.Content)
+				contentStr = DimmedStyle.Strikethrough(true).Render(entry.Content)
 			}
 
 			line := fmt.Sprintf("%s %s", bulletStr, contentStr)
-			content += style.Width(m.width-4).Render(line) + "\n"
+			contentLines = append(contentLines, style.Width(m.width-4).Render(line))
 		}
 	}
 
 	// Padding
 	for i := (endIndex - m.startIndex); i < visibleHeight; i++ {
-		content += "\n"
+		contentLines = append(contentLines, "")
 	}
+	content := strings.Join(contentLines, "\n")
 
 	// Dynamic Footer / Status Bar
 	var footerStatus string
@@ -242,7 +247,13 @@ func (m modelState) View() string {
 
 	footer := StatusLineStyle.Width(m.width - 4).Render(footerStatus)
 
-	return AppStyle.Render(header + "\n" + content + "\n" + footer)
+	// Combine everything
+	return AppStyle.Render(lipgloss.JoinVertical(lipgloss.Left,
+		header,
+		hr,
+		content,
+		footer,
+	))
 }
 
 func InitialModel() modelState {
