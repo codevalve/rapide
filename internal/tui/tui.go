@@ -5,6 +5,7 @@ import (
 	"rapide/internal/model"
 	"rapide/internal/storage"
 	"strings"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -97,6 +98,49 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.startIndex = m.cursor - visibleHeight + 1
 				}
 			}
+		case "d": // Toggle Done
+			filtered := m.getFilteredEntries()
+			if len(filtered) > 0 {
+				entry := filtered[m.cursor]
+				if entry.Bullet == "•" {
+					entry.Bullet = "x"
+				} else if entry.Bullet == "x" {
+					entry.Bullet = "•"
+				}
+				s, _ := storage.NewStorage()
+				s.Update(entry.ID, entry)
+				m.entries, _ = s.List() // Refresh all
+			}
+		case "x": // Delete
+			filtered := m.getFilteredEntries()
+			if len(filtered) > 0 {
+				entry := filtered[m.cursor]
+				s, _ := storage.NewStorage()
+				s.Delete(entry.ID)
+				m.entries, _ = s.List()
+				if m.cursor >= len(m.getFilteredEntries()) && m.cursor > 0 {
+					m.cursor--
+				}
+			}
+		case "m": // Migrate
+			filtered := m.getFilteredEntries()
+			if len(filtered) > 0 {
+				entry := filtered[m.cursor]
+				if entry.Bullet == "•" {
+					s, _ := storage.NewStorage()
+					// 1. Mark current as migrated
+					entry.Bullet = ">"
+					s.Update(entry.ID, entry)
+					// 2. Add new entry for today
+					newEntry := model.Entry{
+						Content:   entry.Content,
+						Bullet:    "•",
+						Timestamp: time.Now(),
+					}
+					s.Append(newEntry)
+					m.entries, _ = s.List()
+				}
+			}
 		}
 	}
 	return m, nil
@@ -186,10 +230,12 @@ func (m modelState) View() string {
 		if m.filterInput != "" {
 			countInfo = fmt.Sprintf("%d/%d found", len(filtered), len(m.entries))
 		}
-		footerStatus = fmt.Sprintf("%s • %s filter • %s reset • %s navigate • %s quit",
+		footerStatus = fmt.Sprintf("%s • %s filter • %s done • %s migrate • %s delete • %s navigate • %s quit",
 			countInfo,
 			KeyStyle.Render("/"),
-			KeyStyle.Render("esc"),
+			KeyStyle.Render("d"),
+			KeyStyle.Render("m"),
+			KeyStyle.Render("x"),
 			KeyStyle.Render("j/k"),
 			KeyStyle.Render("q"))
 	}
