@@ -273,7 +273,11 @@ func (m modelState) View() string {
 	// Header
 	title := TitleStyle.Render("RAPIDE")
 	subtitle := DimmedStyle.Strikethrough(false).Render("Project Rapanui")
-	header := lipgloss.JoinHorizontal(lipgloss.Bottom, title, "  ", subtitle)
+
+	header := title + "  " + subtitle
+	if m.width > 0 && lipgloss.Width(header) > m.width-4 {
+		header = title // Simple fallback for very narrow screens
+	}
 
 	line := strings.Repeat("─", m.width-4)
 	hr := DimmedStyle.Strikethrough(false).Render(line)
