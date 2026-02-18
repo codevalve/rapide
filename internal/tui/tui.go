@@ -28,6 +28,8 @@ type modelState struct {
 	trimAction  string    // "archive" or "delete"
 	trimInput   string    // raw date input
 	trimDate    time.Time // parsed cutoff
+	editing     bool
+	editInput   string
 }
 
 func (m modelState) Init() tea.Cmd {
@@ -63,6 +65,36 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.ready = true
 
 	case tea.KeyMsg:
+		if m.editing {
+			switch msg.String() {
+			case "esc":
+				m.editing = false
+				m.editInput = ""
+			case "backspace":
+				if len(m.editInput) > 0 {
+					m.editInput = m.editInput[:len(m.editInput)-1]
+				}
+			case "enter":
+				if m.editInput != "" {
+					filtered := m.getFilteredEntries()
+					if len(filtered) > 0 {
+						entry := filtered[m.cursor]
+						entry.Content = m.editInput
+						s, _ := storage.NewStorage()
+						s.Update(entry.ID, entry)
+						m.entries, _ = s.List()
+						m.editing = false
+						m.editInput = ""
+					}
+				}
+			default:
+				if len(msg.String()) == 1 {
+					m.editInput += msg.String()
+				}
+			}
+			return m, nil
+		}
+
 		if m.trimStep > 0 {
 			switch msg.String() {
 			case "esc":
@@ -213,13 +245,21 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.startIndex = m.cursor - visibleHeight + 1
 				}
 			}
+		case "e": // Edit
+			filtered := m.getFilteredEntries()
+			if len(filtered) > 0 {
+				m.editing = true
+				m.editInput = filtered[m.cursor].Content
+			}
+			return m, nil
 		case "d": // Toggle Done
 			filtered := m.getFilteredEntries()
 			if len(filtered) > 0 {
 				entry := filtered[m.cursor]
-				if entry.Bullet == "•" {
+				switch entry.Bullet {
+				case "•":
 					entry.Bullet = "x"
-				} else if entry.Bullet == "x" {
+				case "x":
 					entry.Bullet = "•"
 				}
 				s, _ := storage.NewStorage()
@@ -383,6 +423,18 @@ func (m modelState) View() string {
 			SearchPromptStyle.Render(fmt.Sprintf("Confirm %s", actionStr)),
 			count,
 			KeyStyle.Render(dateStr))
+	} else if m.editing {
+		filtered := m.getFilteredEntries()
+		id := "?"
+		if len(filtered) > 0 {
+			id = filtered[m.cursor].ID
+			if len(id) > 4 {
+				id = id[:4]
+			}
+		}
+		footerStatus = fmt.Sprintf("%s %s",
+			SearchPromptStyle.Render(fmt.Sprintf("EDIT [%s]:", id)),
+			SearchStyle.Render(m.editInput+"_"))
 	} else if m.creating {
 		footerStatus = fmt.Sprintf("%s %s",
 			SearchPromptStyle.Render("NEW ENTRY (e.g. • task):"),
@@ -396,9 +448,10 @@ func (m modelState) View() string {
 		if m.filterInput != "" {
 			countInfo = fmt.Sprintf("%d/%d found", len(filtered), len(m.entries))
 		}
-		footerStatus = fmt.Sprintf("%s • %s new • %s filter • %s trim • %s done • %s migrate • %s delete • %s navigate • %s quit",
+		footerStatus = fmt.Sprintf("%s • %s new • %s edit • %s filter • %s trim • %s done • %s migrate • %s delete • %s navigate • %s quit",
 			countInfo,
 			KeyStyle.Render("n"),
+			KeyStyle.Render("e"),
 			KeyStyle.Render("/"),
 			KeyStyle.Render("T"),
 			KeyStyle.Render("d"),
