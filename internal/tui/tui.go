@@ -10,17 +10,34 @@ import (
 )
 
 type modelState struct {
-	entries    []model.Entry
-	cursor     int
-	startIndex int
-	width      int
-	height     int
-	err        error
-	ready      bool
+	entries     []model.Entry
+	cursor      int
+	startIndex  int
+	width       int
+	height      int
+	err         error
+	ready       bool
+	filtering   bool
+	filterInput string
 }
 
 func (m modelState) Init() tea.Cmd {
 	return nil
+}
+
+func (m modelState) getFilteredEntries() []model.Entry {
+	if m.filterInput == "" {
+		return m.entries
+	}
+	var filtered []model.Entry
+	query := strings.ToLower(m.filterInput)
+	for _, e := range m.entries {
+		if strings.Contains(strings.ToLower(e.Content), query) ||
+			strings.Contains(strings.ToLower(e.Bullet), query) {
+			filtered = append(filtered, e)
+		}
+	}
+	return filtered
 }
 
 func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -31,9 +48,36 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.ready = true
 
 	case tea.KeyMsg:
+		if m.filtering {
+			switch msg.String() {
+			case "esc", "enter":
+				m.filtering = false
+			case "backspace":
+				if len(m.filterInput) > 0 {
+					m.filterInput = m.filterInput[:len(m.filterInput)-1]
+					m.cursor = 0
+					m.startIndex = 0
+				}
+			default:
+				if len(msg.String()) == 1 {
+					m.filterInput += msg.String()
+					m.cursor = 0
+					m.startIndex = 0
+				}
+			}
+			return m, nil
+		}
+
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
+		case "/":
+			m.filtering = true
+			return m, nil
+		case "esc":
+			m.filterInput = "" // Clear filter
+			m.cursor = 0
+			m.startIndex = 0
 		case "up", "k":
 			if m.cursor > 0 {
 				m.cursor--
@@ -42,9 +86,10 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 		case "down", "j":
-			if m.cursor < len(m.entries)-1 {
+			filtered := m.getFilteredEntries()
+			if m.cursor < len(filtered)-1 {
 				m.cursor++
-				visibleHeight := m.height - 8 // Header + Footer approximate height
+				visibleHeight := m.height - 8
 				if visibleHeight < 1 {
 					visibleHeight = 1
 				}
@@ -72,7 +117,6 @@ func (m modelState) View() string {
 	)
 
 	// Calculate visible area for the list
-	// Header is ~4 lines, Footer is ~3 lines, + padding
 	reservedHeight := 7
 	visibleHeight := m.height - reservedHeight
 	if visibleHeight < 1 {
@@ -80,62 +124,77 @@ func (m modelState) View() string {
 	}
 
 	// List of entries
+	filtered := m.getFilteredEntries()
 	var content string
 	endIndex := m.startIndex + visibleHeight
-	if endIndex > len(m.entries) {
-		endIndex = len(m.entries)
+	if endIndex > len(filtered) {
+		endIndex = len(filtered)
 	}
 
-	for i := m.startIndex; i < endIndex; i++ {
-		entry := m.entries[i]
-		style := EntryStyle
-		if i == m.cursor {
-			style = SelectedEntryStyle
+	if len(filtered) == 0 {
+		content = "\n  No entries found matching search query.\n"
+	} else {
+		for i := m.startIndex; i < endIndex; i++ {
+			entry := filtered[i]
+			style := EntryStyle
+			if i == m.cursor {
+				style = SelectedEntryStyle
+			}
+
+			bStyle := BulletStyle
+			switch entry.Bullet {
+			case "•":
+				bStyle = bStyle.Foreground(TaskColor)
+			case "O":
+				bStyle = bStyle.Foreground(EventColor)
+			case "-", "—":
+				bStyle = bStyle.Foreground(NoteColor)
+			case ">":
+				bStyle = bStyle.Foreground(MigratedColor)
+			}
+
+			bulletStr := bStyle.Render(entry.Bullet)
+			contentStr := entry.Content
+
+			if strings.HasSuffix(entry.Content, "!") {
+				contentStr = PriorityStyle.Render(entry.Content)
+			}
+
+			if entry.Bullet == "x" {
+				bulletStr = DimmedStyle.Render("x")
+				contentStr = DimmedStyle.Render(entry.Content)
+			}
+
+			line := fmt.Sprintf("%s %s", bulletStr, contentStr)
+			content += style.Width(m.width-4).Render(line) + "\n"
 		}
-
-		// Determine bullet color
-		bStyle := BulletStyle
-		switch entry.Bullet {
-		case "•":
-			bStyle = bStyle.Foreground(TaskColor)
-		case "O":
-			bStyle = bStyle.Foreground(EventColor)
-		case "-", "—":
-			bStyle = bStyle.Foreground(NoteColor)
-		case ">":
-			bStyle = bStyle.Foreground(MigratedColor)
-		}
-
-		bulletStr := bStyle.Render(entry.Bullet)
-		contentStr := entry.Content
-
-		// Priority check
-		if strings.HasSuffix(entry.Content, "!") {
-			contentStr = PriorityStyle.Render(entry.Content)
-		}
-
-		// Completion state (dimmed/strikethrough)
-		if entry.Bullet == "x" {
-			bulletStr = DimmedStyle.Render("x")
-			contentStr = DimmedStyle.Render(entry.Content)
-		}
-
-		line := fmt.Sprintf("%s %s", bulletStr, contentStr)
-		content += style.Width(m.width-4).Render(line) + "\n"
 	}
 
-	// Padding to keep the footer pinned if list is short
+	// Padding
 	for i := (endIndex - m.startIndex); i < visibleHeight; i++ {
 		content += "\n"
 	}
 
-	// Footer
-	footer := StatusLineStyle.Width(m.width - 4).Render(
-		fmt.Sprintf("%d entries • %s navigate • %s quit",
-			len(m.entries),
+	// Dynamic Footer / Status Bar
+	var footerStatus string
+	if m.filtering {
+		footerStatus = fmt.Sprintf("%s %s",
+			SearchPromptStyle.Render("FIND:"),
+			SearchStyle.Render(m.filterInput+"_"))
+	} else {
+		countInfo := fmt.Sprintf("%d entries", len(m.entries))
+		if m.filterInput != "" {
+			countInfo = fmt.Sprintf("%d/%d found", len(filtered), len(m.entries))
+		}
+		footerStatus = fmt.Sprintf("%s • %s filter • %s reset • %s navigate • %s quit",
+			countInfo,
+			KeyStyle.Render("/"),
+			KeyStyle.Render("esc"),
 			KeyStyle.Render("j/k"),
-			KeyStyle.Render("q")),
-	)
+			KeyStyle.Render("q"))
+	}
+
+	footer := StatusLineStyle.Width(m.width - 4).Render(footerStatus)
 
 	return AppStyle.Render(header + "\n" + content + "\n" + footer)
 }

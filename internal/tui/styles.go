@@ -62,4 +62,12 @@ var (
 	KeyStyle = lipgloss.NewStyle().
 			Foreground(PrimaryColor).
 			Bold(true)
+
+	SearchStyle = lipgloss.NewStyle().
+			Foreground(HighlightColor).
+			Bold(true)
+
+	SearchPromptStyle = lipgloss.NewStyle().
+				Foreground(PrimaryColor).
+				Bold(true)
 )
