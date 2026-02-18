@@ -79,7 +79,15 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					filtered := m.getFilteredEntries()
 					if len(filtered) > 0 {
 						entry := filtered[m.cursor]
-						entry.Content = m.editInput
+						// Use bujo.ParseEntry on the raw input
+						newParsed := bujo.ParseEntry([]string{m.editInput})
+
+						// Update fields but preserve ID and Timestamp
+						entry.Content = newParsed.Content
+						entry.Bullet = newParsed.Bullet
+						entry.MarginKey = newParsed.MarginKey
+						entry.Priority = newParsed.Priority
+
 						s, _ := storage.NewStorage()
 						s.Update(entry.ID, entry)
 						m.entries, _ = s.List()
@@ -248,8 +256,18 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "e": // Edit
 			filtered := m.getFilteredEntries()
 			if len(filtered) > 0 {
+				entry := filtered[m.cursor]
 				m.editing = true
-				m.editInput = filtered[m.cursor].Content
+				// Reconstruct raw string: [Margin | ]Bullet Content
+				raw := ""
+				if entry.MarginKey != "" {
+					raw = entry.MarginKey + " | "
+				}
+				raw += entry.Bullet + " " + entry.Content
+				if entry.Priority {
+					raw += "!"
+				}
+				m.editInput = raw
 			}
 			return m, nil
 		case "d": // Toggle Done
