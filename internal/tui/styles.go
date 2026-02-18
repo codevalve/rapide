@@ -18,7 +18,7 @@ var (
 
 	// Styles
 	AppStyle = lipgloss.NewStyle().
-			Padding(1, 2)
+			Padding(0, 2, 0, 2)
 
 	ErrorStyle = lipgloss.NewStyle().
 			Foreground(ErrorColor).
