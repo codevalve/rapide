@@ -5,7 +5,7 @@ This document outlines the planned trajectory for Rapide beyond the initial loca
 ## v2.0.0: Interactive TUI
 The goal is to transition Rapide from a purely command-driven tool to an interactive experience for reviewing and managing logs.
 
-- **Infrastructure**: Implement a Terminal User Interface (TUI) using [Charm Bubble Tea](https://github.com/charmbracelet/bubbletea).
+- **Infrastructure**: Implement a Terminal User Interface (TUI) using [Charm Bubble Tea](https://github.com/charmbracelet/bubbletea) and [Charm Lipgloss](https://github.com/charmbracelet/lipgloss).
 - **Features**:
   - **Interactive List View**: Scroll through entries, filter in real-time, and toggle "Done" states with hotkeys.
   - **Editor Integration**: Open entries in an interactive multi-line editor for faster journaling.
