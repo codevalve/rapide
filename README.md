@@ -37,13 +37,32 @@ rapide "• Fix the login bug!!"
 
 ### Commands
 
-```bash
-rapide list
-rapide list today
-rapide list work
-rapide unfinished
-rapide collections
-```
+| Command | Usage | Description |
+| :--- | :--- | :--- |
+| **`list`** | `rapide list [today/3d/work]` | List entries (filtered by time or collection) |
+| **`done`** | `rapide done <id>` | Mark a task as completed (`x`) |
+| **`migrate`** | `rapide migrate <id>` | Move a task to today and mark original as migrated (`>`) |
+| **`unfinished`**| `rapide unfinished` | List all non-completed tasks (`•`) |
+| **`collections`**| `rapide collections` | See list of margin keys and item counts |
+| **`search`** | `rapide search <query>` | Search all entries for a keyword |
+| **`edit`** | `rapide edit <id> <text>` | Update the content of an existing entry |
+| **`delete`** | `rapide delete <id>` | Permanently remove an entry |
+| **`trim`** | `rapide trim [--before YYYY-MM-DD]` | Archive or delete old logs to keep it clean |
+| **`version`** | `rapide version` | Show current version |
+
+#### Command Details
+
+- **Filtering Logs**: `rapide list` supports flags for precision tracking:
+  - `-t, --time`: `3d`, `today`, `7d`
+  - `-f, --filter`: Filter by margin key (e.g., `-f work`)
+  - `-b, --bullet`: Filter by symbol (e.g., `-b O` for events, `-b x` for done)
+- **Workflow Icons**:
+  - `•` Task (standard)
+  - `x` Done (struck-through and dimmed)
+  - `>` Migrated (moved forward)
+  - `O` Event (notable occurrence)
+  - `-` Note (simple record)
+  - `!` Priority (important)
 
 ## Shell Autocompletion
 
