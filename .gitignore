@@ -16,3 +16,6 @@
 
 # Project-specific binaries
 rapide
+
+# Demos
+demo/*.jsonl    

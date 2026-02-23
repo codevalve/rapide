@@ -1,8 +1,10 @@
 # VHS Tape for Filtering Demo
+Set WindowBar Colorful
 Set FontSize 22
 Set Width 1000
 Set Height 500
 Set Padding 40
+Set TypingSpeed 75ms
 Output demo/filtering.gif
 
 Hide
