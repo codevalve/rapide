@@ -2,6 +2,15 @@
 
 A lightweight, dependency-minimal Go binary for Bullet Journal-style rapid logging.
 
+![Rapide Hero Demo](demo/hero.gif)
+
+## Features in Action 🎬
+
+| Logging | Filtering |
+| :---: | :---: |
+| ![Logging Demo](demo/logging.gif) | ![Filtering Demo](demo/filtering.gif) |
+
+
 ## Installation
 
 ### Homebrew
