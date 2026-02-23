@@ -1,11 +1,16 @@
 # VHS Tape for Filtering Demo
-Output demo/filtering.gif
-
 Set FontSize 22
 Set Width 1000
 Set Height 500
 Set Padding 40
-Set WindowBar Rounded
+Output demo/filtering.gif
+
+Hide
+Type "export RAPIDE_FILE=demo/demo.jsonl"
+Enter
+Type "clear"
+Enter
+Show
 
 # Start Rapide TUI
 Type "./rapide tui"

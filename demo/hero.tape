@@ -1,11 +1,16 @@
 # VHS Tape for Hero Demo
-Output demo/hero.gif
-
 Set FontSize 22
 Set Width 1200
 Set Height 600
 Set Padding 40
-Set WindowBar Rounded
+Output demo/hero.gif
+
+Hide
+Type "export RAPIDE_FILE=demo/demo.jsonl"
+Enter
+Type "clear"
+Enter
+Show
 
 # Start Rapide TUI
 Type "./rapide tui"

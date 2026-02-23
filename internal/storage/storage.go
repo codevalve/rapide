@@ -16,6 +16,14 @@ type Storage struct {
 }
 
 func NewStorage() (*Storage, error) {
+	if customPath := os.Getenv("RAPIDE_FILE"); customPath != "" {
+		dir := filepath.Dir(customPath)
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return nil, err
+		}
+		return &Storage{FilePath: customPath}, nil
+	}
+
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
