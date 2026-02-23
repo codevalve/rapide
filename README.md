@@ -1,4 +1,4 @@
-# Rapide (Go Edition)
+# Rapide
 
 A lightweight, dependency-minimal Go binary for Bullet Journal-style rapid logging.
 
@@ -113,3 +113,14 @@ rapide completion powershell | Out-String | Invoke-Expression
 
 ## Storage
 Entries are stored in `~/.rapide/entries.jsonl`.
+
+---
+
+## Join the Community 🤝
+
+We are actively looking for testers and early adopters to help shape the future of Rapide! If you're interested in providing feedback, reporting bugs, or suggesting new features, please:
+
+1. [Open an issue](https://github.com/codevalve/rapide/issues) with your thoughts.
+2. Join the discussion in our [GitHub Discussions](https://github.com/codevalve/rapide/discussions).
+3. Star the repo to stay updated!
+
