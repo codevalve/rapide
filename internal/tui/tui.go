@@ -498,6 +498,12 @@ func InitialModel() modelState {
 		return modelState{err: err}
 	}
 
+	// Pull updates if autosync is enabled
+	cfg, _ := storage.LoadConfig()
+	if cfg.AutoSync {
+		s.Sync()
+	}
+
 	entries, err := s.List()
 	if err != nil {
 		return modelState{err: err}

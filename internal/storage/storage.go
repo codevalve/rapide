@@ -52,7 +52,17 @@ func (s *Storage) Append(entry model.Entry) (string, error) {
 	}
 
 	_, err = f.Write(append(data, '\n'))
-	return entry.ID, err
+	if err != nil {
+		return "", err
+	}
+
+	// Trigger autosync
+	cfg, _ := LoadConfig()
+	if cfg.AutoSync {
+		s.Sync()
+	}
+
+	return entry.ID, nil
 }
 
 func (s *Storage) List() ([]model.Entry, error) {
@@ -146,6 +156,13 @@ func (s *Storage) saveAll(entries []model.Entry) error {
 			return err
 		}
 	}
+
+	// Trigger autosync
+	cfg, _ := LoadConfig()
+	if cfg.AutoSync {
+		s.Sync()
+	}
+
 	return nil
 }
 
