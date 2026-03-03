@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"rapide/internal/model"
 	"rapide/internal/storage"
 	"sort"
 
@@ -30,15 +31,22 @@ var unfinishedCmd = &cobra.Command{
 			return entries[i].Timestamp.After(entries[j].Timestamp)
 		})
 
-		foundCount := 0
+		var results []model.Entry
+		maxMargin := 0
 		for _, e := range entries {
 			if e.Bullet == "•" {
-				renderEntry(e)
-				foundCount++
+				results = append(results, e)
+				if len(e.MarginKey) > maxMargin {
+					maxMargin = len(e.MarginKey)
+				}
 			}
 		}
 
-		if foundCount == 0 {
+		for _, e := range results {
+			renderEntry(e, maxMargin)
+		}
+
+		if len(results) == 0 {
 			fmt.Println("No pending tasks found.")
 		}
 	},

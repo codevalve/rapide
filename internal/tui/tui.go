@@ -368,6 +368,18 @@ func (m modelState) View() string {
 
 	// List of entries
 	filtered := m.getFilteredEntries()
+
+	// Dynamic Margin Width calculation (Issue #11)
+	maxMargin := 0
+	for _, e := range filtered {
+		if len(e.MarginKey) > maxMargin {
+			maxMargin = len(e.MarginKey)
+		}
+	}
+	if maxMargin < 2 {
+		maxMargin = 2 // Minimal width for visual separation
+	}
+
 	var contentLines []string
 	endIndex := m.startIndex + visibleHeight
 	if endIndex > len(filtered) {
@@ -417,10 +429,13 @@ func (m modelState) View() string {
 			// Add Timestamp
 			tsStr := TimestampStyle.Render(entry.Timestamp.Format("02 Jan 15:04"))
 
-			// Add MarginKey
+			// Dynamic MarginKey
 			marginStr := ""
+			paddedMK := fmt.Sprintf("%-*s", maxMargin, entry.MarginKey)
 			if entry.MarginKey != "" {
-				marginStr = MarginKeyStyle.Render(entry.MarginKey) + " "
+				marginStr = MarginKeyStyle.Render(paddedMK) + " "
+			} else {
+				marginStr = strings.Repeat(" ", maxMargin+1)
 			}
 
 			// Pinned indicator

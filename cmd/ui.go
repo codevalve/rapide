@@ -9,7 +9,7 @@ import (
 
 var (
 	timestampStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#757575"))
-	marginStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("#00ADD8")).Bold(true).Width(12)
+	marginStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("#00ADD8")).Bold(true)
 	bulletStyle    = lipgloss.NewStyle().Bold(true)
 	priorityStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#FF0000")).Bold(true)
 	noteStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("#EEEEEE"))
@@ -18,9 +18,13 @@ var (
 	pinnedStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("#00FF00")).Bold(true)
 )
 
-func renderEntry(e model.Entry) {
+func renderEntry(e model.Entry, marginWidth int) {
+	if marginWidth < 2 {
+		marginWidth = 2
+	}
+
 	rawTS := e.Timestamp.Format("2006-01-02 15:04")
-	rawMK := e.MarginKey
+	rawMK := fmt.Sprintf("%-*s", marginWidth, e.MarginKey)
 	rawBlt := e.Bullet
 	rawCnt := e.Content
 	rawID := e.ID
@@ -32,12 +36,12 @@ func renderEntry(e model.Entry) {
 	// If done, overwrite components with dimmed style
 	if e.Bullet == "x" {
 		ts := doneStyle.Render(rawTS)
-		mk := doneStyle.Render(fmt.Sprintf("%-12s", rawMK))
+		mk := doneStyle.Render(rawMK)
 		blt := doneStyle.Render(rawBlt)
 		cnt := doneStyle.Render(rawCnt)
 		id := doneStyle.Render(fmt.Sprintf("%-5s", rawID))
 		prio := doneStyle.Render(rawPrio)
-		pn := ""
+		pn := "  "
 		if e.Pinned {
 			pn = doneStyle.Render("📌")
 		}
@@ -55,7 +59,7 @@ func renderEntry(e model.Entry) {
 	if e.Priority {
 		prio = priorityStyle.Render(rawPrio)
 	}
-	pn := ""
+	pn := "  "
 	if e.Pinned {
 		pn = pinnedStyle.Render("📌")
 	}

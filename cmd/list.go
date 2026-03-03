@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"rapide/internal/model"
 	"rapide/internal/storage"
 	"sort"
 	"strings"
@@ -74,6 +75,8 @@ var listCmd = &cobra.Command{
 			}
 		}
 
+		var filtered []model.Entry
+		maxMargin := 0
 		for _, e := range entries {
 			if e.Timestamp.Before(cutoff) {
 				continue
@@ -100,7 +103,14 @@ var listCmd = &cobra.Command{
 				}
 			}
 
-			renderEntry(e)
+			filtered = append(filtered, e)
+			if len(e.MarginKey) > maxMargin {
+				maxMargin = len(e.MarginKey)
+			}
+		}
+
+		for _, e := range filtered {
+			renderEntry(e, maxMargin)
 		}
 	},
 }
