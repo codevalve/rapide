@@ -20,11 +20,13 @@ Bridging the gap between local-only and cloud-hosted logs by leveraging private 
   - **Optional Autosync**: Configurable setting to automatically sync on every write or TUI exit.
   - **Setup Wizard**: `rapide sync --setup` to easily link a private repository.
 
-## v2.6.0: Polish & Organization
-Gleaning the best "quality of life" features from tools like `nb` to make Rapide a power-user's journal.
-
+## v2.6.0: Pinning (Released 📌🚀)
 - **Features**:
   - **Pinning**: `rapide pin <id>` to keep critical entries or current projects at the top of the list.
+
+## v2.6.1: Hashtags & Links
+- Gleaning the best "quality of life" features from tools like `nb` to make Rapide a power-user's journal.
+- **Features**:
   - **Inline Tag Support**: Automatic highlighting and filtering for `#hashtags` within entry content.
   - **Interactive Links**: URL detection in the TUI to quickly open reference links in your browser.
   - **Journal Stats**: `rapide stats` to see activity heatmaps and collection distributions.
