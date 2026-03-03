@@ -140,6 +140,30 @@ func (s *Storage) Delete(id string) error {
 	return s.saveAll(updated)
 }
 
+func (s *Storage) TogglePin(id string) (bool, error) {
+	entries, err := s.List()
+	if err != nil {
+		return false, err
+	}
+
+	found := false
+	newState := false
+	for i, e := range entries {
+		if e.ID == id {
+			entries[i].Pinned = !e.Pinned
+			newState = entries[i].Pinned
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return false, fmt.Errorf("entry with ID %s not found", id)
+	}
+
+	return newState, s.saveAll(entries)
+}
+
 func (s *Storage) saveAll(entries []model.Entry) error {
 	f, err := os.OpenFile(s.FilePath, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {

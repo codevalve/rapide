@@ -5,6 +5,7 @@ import (
 	bujo "rapide/internal"
 	"rapide/internal/model"
 	"rapide/internal/storage"
+	"sort"
 	"strings"
 	"time"
 
@@ -37,23 +38,33 @@ func (m modelState) Init() tea.Cmd {
 }
 
 func (m modelState) getFilteredEntries() []model.Entry {
-	if m.filterInput == "" {
-		return m.entries
-	}
 	var filtered []model.Entry
 	query := strings.ToLower(m.filterInput)
+
 	for _, e := range m.entries {
-		shortID := ""
-		if len(e.ID) >= 4 {
-			shortID = e.ID[:4]
+		if m.filterInput != "" {
+			shortID := ""
+			if len(e.ID) >= 4 {
+				shortID = e.ID[:4]
+			}
+			if !strings.Contains(strings.ToLower(e.Content), query) &&
+				!strings.Contains(strings.ToLower(e.Bullet), query) &&
+				!strings.Contains(strings.ToLower(e.MarginKey), query) &&
+				!strings.Contains(strings.ToLower(shortID), query) {
+				continue
+			}
 		}
-		if strings.Contains(strings.ToLower(e.Content), query) ||
-			strings.Contains(strings.ToLower(e.Bullet), query) ||
-			strings.Contains(strings.ToLower(e.MarginKey), query) ||
-			strings.Contains(strings.ToLower(shortID), query) {
-			filtered = append(filtered, e)
-		}
+		filtered = append(filtered, e)
 	}
+
+	// Sort: Pinned first, then by timestamp (newest first)
+	sort.Slice(filtered, func(i, j int) bool {
+		if filtered[i].Pinned != filtered[j].Pinned {
+			return filtered[i].Pinned
+		}
+		return filtered[i].Timestamp.After(filtered[j].Timestamp)
+	})
+
 	return filtered
 }
 
@@ -314,6 +325,14 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.entries, _ = s.List()
 				}
 			}
+		case "p": // Toggle Pin
+			filtered := m.getFilteredEntries()
+			if len(filtered) > 0 {
+				entry := filtered[m.cursor]
+				s, _ := storage.NewStorage()
+				s.TogglePin(entry.ID)
+				m.entries, _ = s.List() // Refresh
+			}
 		}
 	}
 	return m, nil
@@ -404,7 +423,13 @@ func (m modelState) View() string {
 				marginStr = MarginKeyStyle.Render(entry.MarginKey) + " "
 			}
 
-			line := fmt.Sprintf("%-6s %s  %s%s %s", shortID, tsStr, marginStr, bulletStr, contentStr)
+			// Pinned indicator
+			pinnedStr := "  "
+			if entry.Pinned {
+				pinnedStr = PinnedStyle.Render("📌")
+			}
+
+			line := fmt.Sprintf("%-6s %s %s %s%s %s", shortID, tsStr, pinnedStr, marginStr, bulletStr, contentStr)
 			contentLines = append(contentLines, style.Width(m.width-4).Render(line))
 		}
 	}
@@ -466,10 +491,11 @@ func (m modelState) View() string {
 		if m.filterInput != "" {
 			countInfo = fmt.Sprintf("%d/%d found", len(filtered), len(m.entries))
 		}
-		footerStatus = fmt.Sprintf("%s • %s new • %s edit • %s filter • %s trim • %s done • %s migrate • %s delete • %s navigate • %s quit",
+		footerStatus = fmt.Sprintf("%s • %s new • %s edit • %s pin • %s filter • %s trim • %s done • %s migrate • %s delete • %s navigate • %s quit",
 			countInfo,
 			KeyStyle.Render("n"),
 			KeyStyle.Render("e"),
+			KeyStyle.Render("p"),
 			KeyStyle.Render("/"),
 			KeyStyle.Render("T"),
 			KeyStyle.Render("d"),

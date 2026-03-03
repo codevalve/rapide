@@ -36,8 +36,11 @@ var listCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		// Sort newest first
+		// Sort: Pinned first, then newest first
 		sort.Slice(entries, func(i, j int) bool {
+			if entries[i].Pinned != entries[j].Pinned {
+				return entries[i].Pinned
+			}
 			return entries[i].Timestamp.After(entries[j].Timestamp)
 		})
 

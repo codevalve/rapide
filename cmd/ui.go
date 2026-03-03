@@ -15,6 +15,7 @@ var (
 	noteStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("#EEEEEE"))
 	idStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("#555555")).Italic(true).Width(5)
 	doneStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("#444444")).Strikethrough(true)
+	pinnedStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("#00FF00")).Bold(true)
 )
 
 func renderEntry(e model.Entry) {
@@ -36,7 +37,11 @@ func renderEntry(e model.Entry) {
 		cnt := doneStyle.Render(rawCnt)
 		id := doneStyle.Render(fmt.Sprintf("%-5s", rawID))
 		prio := doneStyle.Render(rawPrio)
-		fmt.Printf("%s | %s | %s | %s %s %s\n", id, ts, mk, blt, cnt, prio)
+		pn := ""
+		if e.Pinned {
+			pn = doneStyle.Render("📌")
+		}
+		fmt.Printf("%s | %s | %s | %s %s %s %s\n", id, ts, mk, pn, blt, cnt, prio)
 		return
 	}
 
@@ -50,6 +55,10 @@ func renderEntry(e model.Entry) {
 	if e.Priority {
 		prio = priorityStyle.Render(rawPrio)
 	}
+	pn := ""
+	if e.Pinned {
+		pn = pinnedStyle.Render("📌")
+	}
 
-	fmt.Printf("%s | %s | %s | %s %s %s\n", id, ts, mk, blt, cnt, prio)
+	fmt.Printf("%s | %s | %s | %s %s %s %s\n", id, ts, mk, pn, blt, cnt, prio)
 }

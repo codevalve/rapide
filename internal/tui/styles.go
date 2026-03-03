@@ -43,6 +43,7 @@ var (
 				Bold(true)
 
 	BulletStyle   = lipgloss.NewStyle().Bold(true)
+	PinnedStyle   = lipgloss.NewStyle().Foreground(HighlightColor).Bold(true)
 	PriorityStyle = lipgloss.NewStyle().Foreground(AccentColor).Bold(true)
 	DimmedStyle   = lipgloss.NewStyle().Foreground(SecondaryColor).Strikethrough(true)
 

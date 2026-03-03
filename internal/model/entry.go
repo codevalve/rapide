@@ -9,4 +9,5 @@ type Entry struct {
 	Bullet    string    `json:"bullet"`
 	Content   string    `json:"content"`
 	Priority  bool      `json:"priority"`
+	Pinned    bool      `json:"pinned"`
 }
