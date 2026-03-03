@@ -1,8 +1,10 @@
 # VHS Tape for Hero Demo
-Set FontSize 22
+Set WindowBar Colorful
+Set FontSize 16
 Set Width 1200
 Set Height 600
 Set Padding 40
+Set TypingSpeed 75ms
 Output demo/hero.gif
 
 Hide
