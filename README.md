@@ -41,6 +41,8 @@ rapide tui
 - **`m`**: Migrate task to today (`>`)
 - **`x`**: Delete entry
 - **`T`**: Surgical trim (archive/delete entries before a specific date)
+- **`p`**: Toggle pin status (pinned items stay at the top)
+- **`e`**: Edit entry inline
 - **`q`**: Quit
 
 ## Usage
@@ -67,6 +69,8 @@ Syntax: `rapide [margin-key] | [bullet] content [!]`
 | **`collections`**| `rapide collections` | See list of margin keys and item counts |
 | **`search`** | `rapide search <query>` | Search all entries for a keyword or ID |
 | **`edit`** | `rapide edit <id> <text>` | Update the content of an existing entry |
+| **`pin`** | `rapide pin <id>` | **New!** Toggle pin status (pinned items stay at top) |
+| **`sync`** | `rapide sync` | **New!** Sync logs with a private Git repository |
 | **`delete`** | `rapide delete <id>` | Permanently remove an entry |
 | **`trim`** | `rapide trim [--before DATE]` | Archive or delete old logs with confirmation |
 | **`version`** | `rapide version` | Show current version |
@@ -120,8 +124,28 @@ rapide completion powershell | Out-String | Invoke-Expression
 
 ---
 
+## Git Synchronization 🔄
+
+Rapide v2.5.0 introduces automated syncing with private Git repositories, allowing you to keep your logs in sync across machines.
+
+- **Setup**: `rapide sync --setup <git-url>`
+- **Manual Sync**: `rapide sync`
+- **Autosync**: `rapide sync --autosync true` (Automatically push/pull on every change and TUI startup)
+
+## Pinning 📌
+
+Keep critical projects or urgent tasks at the top of your list! Pinned items are sorted first, regardless of their timestamp.
+
+- **CLI**: `rapide pin <id>`
+- **TUI**: Hover over an item and press `p`.
+
+---
+
 ## Storage
-Entries are stored in `~/.rapide/entries.jsonl`.
+
+Entries and configuration are stored in your home directory:
+- **Entries**: `~/.rapide/entries.jsonl`
+- **Config**: `~/.rapide/config.json` (Stores Git settings and preferences)
 
 ---
 
