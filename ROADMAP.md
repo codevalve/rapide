@@ -11,7 +11,7 @@ The goal is to transition Rapide from a purely command-driven tool to an interac
   - **Editor Integration**: Open entries in an interactive multi-line editor for faster journaling.
   - **Visual Board**: A "Dash" view showing a high-level summary of your collections and pending tasks.
 
-## v2.5.0: Git Sync (Bridge)
+## v2.5.0: Git Sync (Bridge) (Released 🌉🚀)
 Bridging the gap between local-only and cloud-hosted logs by leveraging private Git repositories.
 
 - **Infrastructure**: Lightweight Git automation for the `~/.rapide/` directory.
