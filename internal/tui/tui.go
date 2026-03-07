@@ -109,7 +109,7 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				}
 			default:
-				if len(msg.String()) == 1 {
+				if msg.Type == tea.KeyRunes || msg.Type == tea.KeySpace {
 					m.editInput += msg.String()
 				}
 			}
@@ -146,7 +146,7 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.configCfg.RemoteURL += msg.String()
 				}
 			default:
-				if m.configStep == 1 && len(msg.String()) == 1 {
+				if m.configStep == 1 && (msg.Type == tea.KeyRunes || msg.Type == tea.KeySpace) {
 					m.configCfg.RemoteURL += msg.String()
 				}
 			}
@@ -208,7 +208,7 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.trimInput = ""
 				m.trimAction = ""
 			default:
-				if m.trimStep == 1 && len(msg.String()) == 1 {
+				if m.trimStep == 1 && (msg.Type == tea.KeyRunes || msg.Type == tea.KeySpace) {
 					m.trimInput += msg.String()
 				}
 			}
@@ -238,7 +238,7 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.createInput = m.createInput[:len(m.createInput)-1]
 				}
 			default:
-				if len(msg.String()) == 1 {
+				if msg.Type == tea.KeyRunes || msg.Type == tea.KeySpace {
 					m.createInput += msg.String()
 				}
 			}
@@ -256,7 +256,7 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.startIndex = 0
 				}
 			default:
-				if len(msg.String()) == 1 {
+				if msg.Type == tea.KeyRunes || msg.Type == tea.KeySpace {
 					m.filterInput += msg.String()
 					m.cursor = 0
 					m.startIndex = 0
