@@ -447,8 +447,11 @@ func (m modelState) View() string {
 			maxMargin = len(e.MarginKey)
 		}
 	}
-	if maxMargin < 2 {
-		maxMargin = 2 // Minimal width for visual separation
+	if maxMargin > 12 {
+		maxMargin = 12
+	}
+	if maxMargin < 1 {
+		maxMargin = 1 // Minimal width for visual separation
 	}
 
 	var contentLines []string
@@ -502,7 +505,11 @@ func (m modelState) View() string {
 
 			// Dynamic MarginKey
 			marginStr := ""
-			paddedMK := fmt.Sprintf("%-*s", maxMargin, entry.MarginKey)
+			displayMK := entry.MarginKey
+			if len(displayMK) > maxMargin {
+				displayMK = displayMK[:maxMargin-1] + "…"
+			}
+			paddedMK := fmt.Sprintf("%-*s", maxMargin, displayMK)
 			if entry.MarginKey != "" {
 				marginStr = MarginKeyStyle.Render(paddedMK) + " "
 			} else {
