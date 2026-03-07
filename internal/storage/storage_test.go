@@ -133,3 +133,62 @@ func TestTrimAndArchive(t *testing.T) {
 		t.Errorf("expected 1 item remaining in main log, got %d", len(entries))
 	}
 }
+
+func TestMarkDoneAndArchiveCompleted(t *testing.T) {
+	tmpDir, err := os.MkdirTemp("", "rapide-done-test-*")
+	if err != nil {
+		t.Fatalf("failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	dbPath := filepath.Join(tmpDir, "entries.jsonl")
+	s := &Storage{FilePath: dbPath}
+
+	// Add an entry
+	entry := model.Entry{
+		Content: "Task to complete",
+		Bullet:  "•",
+	}
+	id, err := s.Append(entry)
+	if err != nil {
+		t.Fatalf("Append failed: %v", err)
+	}
+
+	// Mark done
+	entries, _ := s.List()
+	entries[0].Bullet = "x"
+	err = s.Update(id, entries[0])
+	if err != nil {
+		t.Fatalf("Update failed: %v", err)
+	}
+
+	// Verify it's marked as done
+	entries, _ = s.List()
+	if entries[0].Bullet != "x" {
+		t.Errorf("expected bullet 'x', got '%s'", entries[0].Bullet)
+	}
+
+	// Archive completed
+	count, filename, err := s.ArchiveCompleted()
+	if err != nil {
+		t.Fatalf("ArchiveCompleted failed: %v", err)
+	}
+	if count != 1 {
+		t.Errorf("expected 1 item archived, got %d", count)
+	}
+	if filename == "" {
+		t.Error("expected non-empty archive filename")
+	}
+
+	// Verify the main log is empty
+	entries, _ = s.List()
+	if len(entries) != 0 {
+		t.Errorf("expected 0 items remaining in main log, got %d", len(entries))
+	}
+
+	// Verify archive file exists
+	archivePath := filepath.Join(tmpDir, filename)
+	if _, err := os.Stat(archivePath); os.IsNotExist(err) {
+		t.Errorf("expected archive file %s to exist", archivePath)
+	}
+}
