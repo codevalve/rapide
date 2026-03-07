@@ -31,6 +31,8 @@ type modelState struct {
 	trimDate    time.Time // parsed cutoff
 	editing     bool
 	editInput   string
+	configStep  int
+	configCfg   *storage.Config
 }
 
 func (m modelState) Init() tea.Cmd {
@@ -109,6 +111,43 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			default:
 				if len(msg.String()) == 1 {
 					m.editInput += msg.String()
+				}
+			}
+			return m, nil
+		}
+
+		if m.configStep > 0 {
+			switch msg.String() {
+			case "esc":
+				m.configStep = 0
+				m.configCfg = nil
+			case "enter":
+				if m.configStep == 1 {
+					m.configStep = 2
+				}
+			case "backspace":
+				if m.configStep == 1 && len(m.configCfg.RemoteURL) > 0 {
+					m.configCfg.RemoteURL = m.configCfg.RemoteURL[:len(m.configCfg.RemoteURL)-1]
+				}
+			case "y", "Y":
+				if m.configStep == 2 {
+					m.configCfg.AutoSync = true
+					storage.SaveConfig(m.configCfg)
+					m.configStep = 0
+				} else if m.configStep == 1 {
+					m.configCfg.RemoteURL += msg.String()
+				}
+			case "n", "N":
+				if m.configStep == 2 {
+					m.configCfg.AutoSync = false
+					storage.SaveConfig(m.configCfg)
+					m.configStep = 0
+				} else if m.configStep == 1 {
+					m.configCfg.RemoteURL += msg.String()
+				}
+			default:
+				if m.configStep == 1 && len(msg.String()) == 1 {
+					m.configCfg.RemoteURL += msg.String()
 				}
 			}
 			return m, nil
@@ -235,6 +274,14 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "n":
 			m.creating = true
 			m.createInput = ""
+			return m, nil
+		case "c":
+			cfg, _ := storage.LoadConfig()
+			if cfg == nil {
+				cfg = &storage.Config{}
+			}
+			m.configCfg = cfg
+			m.configStep = 1
 			return m, nil
 		case "T":
 			m.trimStep = 1
@@ -501,22 +548,32 @@ func (m modelState) View() string {
 		footerStatus = fmt.Sprintf("%s %s",
 			SearchPromptStyle.Render("FIND:"),
 			SearchStyle.Render(m.filterInput+"_"))
+	} else if m.configStep == 1 {
+		footerStatus = fmt.Sprintf("%s %s",
+			SearchPromptStyle.Render("CONFIG Remote URL:"),
+			SearchStyle.Render(m.configCfg.RemoteURL+"_"))
+	} else if m.configStep == 2 {
+		current := "false"
+		if m.configCfg.AutoSync {
+			current = "true"
+		}
+		footerStatus = fmt.Sprintf("%s %s",
+			SearchPromptStyle.Render(fmt.Sprintf("CONFIG AutoSync (y/n) [current: %s]:", current)),
+			SearchStyle.Render("_"))
 	} else {
 		countInfo := fmt.Sprintf("%d entries", len(m.entries))
 		if m.filterInput != "" {
 			countInfo = fmt.Sprintf("%d/%d found", len(filtered), len(m.entries))
 		}
-		footerStatus = fmt.Sprintf("%s • %s new • %s edit • %s pin • %s filter • %s trim • %s done • %s migrate • %s delete • %s navigate • %s quit",
+		footerStatus = fmt.Sprintf("%s • %s new • %s edit • %s pin • %s filter • %s trim • %s config • %s done • %s quit",
 			countInfo,
 			KeyStyle.Render("n"),
 			KeyStyle.Render("e"),
 			KeyStyle.Render("p"),
 			KeyStyle.Render("/"),
 			KeyStyle.Render("T"),
+			KeyStyle.Render("c"),
 			KeyStyle.Render("d"),
-			KeyStyle.Render("m"),
-			KeyStyle.Render("x"),
-			KeyStyle.Render("j/k"),
 			KeyStyle.Render("q"))
 	}
 
