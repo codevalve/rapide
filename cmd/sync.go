@@ -34,6 +34,9 @@ var syncCmd = &cobra.Command{
 		// Handle --autosync flag independently of --setup
 		if cmd.Flags().Changed("autosync") {
 			cfg, _ := storage.LoadConfig()
+			if cfg == nil {
+				cfg = &storage.Config{}
+			}
 			cfg.AutoSync = autoSyncFlag
 			if err := storage.SaveConfig(cfg); err != nil {
 				fmt.Printf("Error saving config: %v\n", err)

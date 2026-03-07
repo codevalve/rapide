@@ -120,6 +120,9 @@ func (s *Storage) SetupGit(remoteURL string) error {
 
 	// 3. Save to config first so it can be included in initial commit
 	cfg, _ := LoadConfig()
+	if cfg == nil {
+		cfg = &Config{}
+	}
 	cfg.RemoteURL = remoteURL
 	if err := SaveConfig(cfg); err != nil {
 		return err

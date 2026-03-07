@@ -1,8 +1,8 @@
 # VHS Tape for Filtering Demo
 Set WindowBar Colorful
-Set FontSize 22
-Set Width 1000
-Set Height 500
+Set FontSize 16
+Set Width 1200
+Set Height 600
 Set Padding 40
 Set TypingSpeed 75ms
 Output demo/filtering.gif
@@ -22,13 +22,15 @@ Sleep 1s
 # Start filtering
 Type "/"
 Sleep 500ms
-Type "work"
-Sleep 500ms
-Type "!"
+Type "•"
 Sleep 1s
+Type " work"
+Sleep 1s
+Type "!"
+Sleep 1.5s
 
 # Clear and exit
-Backspace 5
+Backspace 8
 Sleep 500ms
 Escape
 Sleep 500ms

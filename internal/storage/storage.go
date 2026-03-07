@@ -58,7 +58,7 @@ func (s *Storage) Append(entry model.Entry) (string, error) {
 
 	// Trigger autosync
 	cfg, _ := LoadConfig()
-	if cfg.AutoSync {
+	if cfg != nil && cfg.AutoSync {
 		s.Sync()
 	}
 
@@ -183,7 +183,7 @@ func (s *Storage) saveAll(entries []model.Entry) error {
 
 	// Trigger autosync
 	cfg, _ := LoadConfig()
-	if cfg.AutoSync {
+	if cfg != nil && cfg.AutoSync {
 		s.Sync()
 	}
 

@@ -526,7 +526,7 @@ func InitialModel() modelState {
 
 	// Pull updates if autosync is enabled
 	cfg, _ := storage.LoadConfig()
-	if cfg.AutoSync {
+	if cfg != nil && cfg.AutoSync {
 		s.Sync()
 	}
 

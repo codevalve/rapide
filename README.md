@@ -6,9 +6,9 @@ A lightweight, dependency-minimal Go binary for Bullet Journal-style rapid loggi
 
 ## Features in Action 🎬
 
-| Logging | Filtering |
-| :---: | :---: |
-| ![Logging Demo](demo/logging.gif) | ![Filtering Demo](demo/filtering.gif) |
+| Logging | Filtering | Git Sync |
+| :---: | :---: | :---: |
+| ![Logging Demo](demo/logging.gif) | ![Filtering Demo](demo/filtering.gif) | ![Sync Demo](demo/sync.gif) |
 
 
 ## Installation

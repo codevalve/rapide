@@ -28,10 +28,18 @@ Type "./rapide list"
 Enter
 Sleep 2s
 
+# Show pinning via CLI
+Type "./rapide pin abcd"
+Enter
+Sleep 1s
+Type "./rapide list"
+Enter
+Sleep 2s
+
 # Show just the filtered margin type list
 Type "./rapide list WORK"
 Enter
-Sleep 5s
+Sleep 3s
 
 # Delete demo item file
 Hide

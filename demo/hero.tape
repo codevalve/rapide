@@ -17,29 +17,37 @@ Show
 # Start Rapide TUI
 Type "./rapide tui"
 Enter
-Sleep 1s
+Sleep 1.5s
 
-# Navigate a bit
-Down 2
+# Navigate and Pin
+Type "jjj"
 Sleep 500ms
-Up 1
+Type "p"
+Sleep 1s
+Type "kkk"
+Sleep 1s
+
+# Edit an entry
+Type "e"
 Sleep 500ms
-
-# Toggle a task
-Type "d"
-Sleep 1s
-Type "d"
+Type " and ship it!"
+Sleep 500ms
+Enter
 Sleep 1s
 
-# Migrate a task
-Type "m"
+# Add new entry from TUI
+Type "n"
+Sleep 500ms
+Type "WORK | • Celebrate v2.6 release"
+Sleep 500ms
+Enter
 Sleep 1s
 
 # Filter
 Type "/"
 Sleep 500ms
 Type "work"
-Sleep 1s
+Sleep 1.5s
 Escape
 Sleep 1s
 
