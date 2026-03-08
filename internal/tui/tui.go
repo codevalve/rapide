@@ -6,6 +6,7 @@ import (
 	"rapide/internal/model"
 	"rapide/internal/storage"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -33,6 +34,7 @@ type modelState struct {
 	editInput   string
 	configStep  int
 	configCfg   *storage.Config
+	configInput string
 }
 
 func (m modelState) Init() tea.Cmd {
@@ -43,7 +45,17 @@ func (m modelState) getFilteredEntries() []model.Entry {
 	var filtered []model.Entry
 	query := strings.ToLower(m.filterInput)
 
+	hideCutoff := time.Time{}
+	if m.configCfg != nil && m.configCfg.AutoHideDays > 0 {
+		hideCutoff = time.Now().Add(-time.Duration(m.configCfg.AutoHideDays) * 24 * time.Hour)
+	}
+
 	for _, e := range m.entries {
+		// Issue #16: Auto-hide completed items after X days
+		if !hideCutoff.IsZero() && e.Bullet == "x" && e.Timestamp.Before(hideCutoff) {
+			continue
+		}
+
 		if m.filterInput != "" {
 			shortID := ""
 			if len(e.ID) >= 4 {
@@ -122,38 +134,45 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch msg.String() {
 			case "esc":
 				m.configStep = 0
-				m.configCfg = nil
+				m.configInput = ""
 			case "enter":
 				if m.configStep == 1 {
 					m.configStep = 2
+				} else if m.configStep == 2 {
+					m.configStep = 3
+					m.configInput = strconv.Itoa(m.configCfg.AutoHideDays)
+				} else if m.configStep == 3 {
+					days, _ := strconv.Atoi(m.configInput)
+					m.configCfg.AutoHideDays = days
+					storage.SaveConfig(m.configCfg)
+					m.configStep = 0
+					m.configInput = ""
 				}
 			case "backspace":
 				if m.configStep == 1 && len(m.configCfg.RemoteURL) > 0 {
 					m.configCfg.RemoteURL = m.configCfg.RemoteURL[:len(m.configCfg.RemoteURL)-1]
+				} else if m.configStep == 3 && len(m.configInput) > 0 {
+					m.configInput = m.configInput[:len(m.configInput)-1]
 				}
 			case "y", "Y":
 				if m.configStep == 2 {
 					m.configCfg.AutoSync = true
-					storage.SaveConfig(m.configCfg)
-					m.configStep = 0
+					m.configStep = 3
+					m.configInput = strconv.Itoa(m.configCfg.AutoHideDays)
 				} else if m.configStep == 1 {
-					if msg.Type == tea.KeyRunes {
-						m.configCfg.RemoteURL += string(msg.Runes)
-					} else {
-						m.configCfg.RemoteURL += msg.String()
-					}
+					m.configCfg.RemoteURL += "y"
+				} else if m.configStep == 3 {
+					m.configInput += "y"
 				}
 			case "n", "N":
 				if m.configStep == 2 {
 					m.configCfg.AutoSync = false
-					storage.SaveConfig(m.configCfg)
-					m.configStep = 0
+					m.configStep = 3
+					m.configInput = strconv.Itoa(m.configCfg.AutoHideDays)
 				} else if m.configStep == 1 {
-					if msg.Type == tea.KeyRunes {
-						m.configCfg.RemoteURL += string(msg.Runes)
-					} else {
-						m.configCfg.RemoteURL += msg.String()
-					}
+					m.configCfg.RemoteURL += "n"
+				} else if m.configStep == 3 {
+					m.configInput += "n"
 				}
 			default:
 				if m.configStep == 1 {
@@ -161,6 +180,10 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.configCfg.RemoteURL += string(msg.Runes)
 					} else if msg.Type == tea.KeySpace {
 						m.configCfg.RemoteURL += " "
+					}
+				} else if m.configStep == 3 {
+					if msg.Type == tea.KeyRunes {
+						m.configInput += string(msg.Runes)
 					}
 				}
 			}
@@ -591,6 +614,10 @@ func (m modelState) View() string {
 		footerStatus = fmt.Sprintf("%s %s",
 			SearchPromptStyle.Render(fmt.Sprintf("CONFIG AutoSync (y/n) [current: %s]:", current)),
 			SearchStyle.Render("_"))
+	} else if m.configStep == 3 {
+		footerStatus = fmt.Sprintf("%s %s",
+			SearchPromptStyle.Render("CONFIG Hide completed items after X days (0 to disable):"),
+			SearchStyle.Render(m.configInput+"_"))
 	} else {
 		countInfo := fmt.Sprintf("%d entries", len(m.entries))
 		if m.filterInput != "" {
@@ -639,7 +666,8 @@ func InitialModel() modelState {
 	}
 
 	return modelState{
-		entries: entries,
-		ready:   false, // Wait for first WindowSizeMsg
+		entries:   entries,
+		configCfg: cfg,
+		ready:     false, // Wait for first WindowSizeMsg
 	}
 }

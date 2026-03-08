@@ -18,6 +18,7 @@ var (
 	filterBullet   string
 	filterPriority bool
 	timeFilter     string
+	showAll        bool
 )
 
 var listCmd = &cobra.Command{
@@ -36,6 +37,8 @@ var listCmd = &cobra.Command{
 			fmt.Printf("Error reading entries: %v\n", err)
 			os.Exit(1)
 		}
+
+		cfg, _ := storage.LoadConfig()
 
 		// Sort: Pinned first, then newest first
 		sort.Slice(entries, func(i, j int) bool {
@@ -78,6 +81,14 @@ var listCmd = &cobra.Command{
 		var filtered []model.Entry
 		maxMargin := 0
 		for _, e := range entries {
+			// Issue #16: Auto-hide completed items
+			if !showAll && cfg != nil && cfg.AutoHideDays > 0 && e.Bullet == "x" {
+				hideCutoff := time.Now().Add(-time.Duration(cfg.AutoHideDays) * 24 * time.Hour)
+				if e.Timestamp.Before(hideCutoff) {
+					continue
+				}
+			}
+
 			if e.Timestamp.Before(cutoff) {
 				continue
 			}
@@ -121,5 +132,6 @@ func init() {
 	listCmd.Flags().StringVarP(&filterBullet, "bullet", "b", "", "Filter by bullet type (e.g. -, O, •, x)")
 	listCmd.Flags().StringVarP(&filterBullet, "type", "", "", "Alias for --bullet")
 	listCmd.Flags().BoolVarP(&filterPriority, "priority", "p", false, "Filter by priority")
+	listCmd.Flags().BoolVarP(&showAll, "all", "a", false, "Show all entries, including auto-hidden completed tasks")
 	rootCmd.AddCommand(listCmd)
 }
