@@ -24,7 +24,13 @@ Bridging the gap between local-only and cloud-hosted logs by leveraging private 
 - **Features**:
   - **Pinning**: `rapide pin <id>` to keep critical entries or current projects at the top of the list.
 
-## v2.6.1: Hashtags & Links
+## v2.6.1: Polish & Organization (Released 🛠️🚀)
+- **Features**:
+  - **TUI Config Editor**: `c` hotkey to manage Git URL and Autosync directly in the UI.
+  - **Clipboard Support**: Robust handling for multi-character pastes in the terminal.
+  - **Dynamic Layout**: Constrained collection column width with automatic truncation.
+
+## v2.7.0: Hashtags & Links
 - Gleaning the best "quality of life" features from tools like `nb` to make Rapide a power-user's journal.
 - **Features**:
   - **Inline Tag Support**: Automatic highlighting and filtering for `#hashtags` within entry content.
