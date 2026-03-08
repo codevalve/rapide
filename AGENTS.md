@@ -41,3 +41,4 @@ Check `.agents/workflows/` for automated SOPs:
 - **`scaffold-command.md`**: How to add a new CLI command.
 - **`release-flow.md`**: Steps for bumping version and release.
 - **`setup-mcp.md`**: Current blueprint for v3.0 MCP integration.
+- **`triage-issues.md`**: The automated GitHub issue triage and engineering workflow.
