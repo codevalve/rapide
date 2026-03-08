@@ -7,8 +7,9 @@ import (
 )
 
 type Config struct {
-	RemoteURL string `json:"remote_url,omitempty"`
-	AutoSync  bool   `json:"auto_sync"`
+	RemoteURL    string `json:"remote_url,omitempty"`
+	AutoSync     bool   `json:"auto_sync"`
+	AutoHideDays int    `json:"auto_hide_days"`
 }
 
 func GetConfigPath() (string, error) {
@@ -32,12 +33,14 @@ func LoadConfig() (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return &Config{AutoSync: false}, nil
+			return &Config{AutoSync: false, AutoHideDays: 14}, nil
 		}
 		return nil, err
 	}
 
-	var cfg Config
+	cfg := Config{
+		AutoHideDays: 14, // Default value as per Issue #16
+	}
 	if err := json.Unmarshal(data, &cfg); err != nil {
 		return nil, err
 	}

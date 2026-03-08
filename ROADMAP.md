@@ -37,14 +37,15 @@ Bridging the gap between local-only and cloud-hosted logs by leveraging private 
   - **Interactive Links**: URL detection in the TUI to quickly open reference links in your browser.
   - **Journal Stats**: `rapide stats` to see activity heatmaps and collection distributions.
 
-## v3.0.0: Hosted Rapide (SSH-as-a-Service)
-Taking inspiration from [terminal.shop](https://terminal.shop), v3 aims to make your logs accessible from anywhere without requiring local setup.
+## v3.0.0: Rapide MCP (Model Context Protocol)
+Bridging the gap between your logs and AI agents by making Rapide a first-class MCP server.
 
-- **Infrastructure**: Use [Wish](https://github.com/charmbracelet/wish) to build an SSH server that serves the Rapide TUI.
+- **Infrastructure**: Implement a Model Context Protocol (MCP) server within the binary.
 - **Features**:
-  - **Remote Access**: Access your journal from any terminal via `ssh rapide.sh`.
-  - **Cloud Sync**: Optional hosted storage (JSONL backed by a secure DB) to keep logs in sync across machines.
-  - **Webhooks**: Integration with other tools to push alerts or events into your rapid log via API.
+  - **Contextual Search**: Allow AI agents to search and retrieve relevant journal entries to inform their tasks.
+  - **Automated Logging**: Enable agents to "log a thought" or "record a milestone" directly into Rapide.
+  - **Tool Integration**: Expose `rapide` commands (list, done, migrate) as MCP tools.
+  - **Privacy First**: Local-first MCP server ensuring your journal stays under your control.
 
 ---
 
