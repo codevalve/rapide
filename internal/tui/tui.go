@@ -109,8 +109,10 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				}
 			default:
-				if msg.Type == tea.KeyRunes || msg.Type == tea.KeySpace {
-					m.editInput += msg.String()
+				if msg.Type == tea.KeyRunes {
+					m.editInput += string(msg.Runes)
+				} else if msg.Type == tea.KeySpace {
+					m.editInput += " "
 				}
 			}
 			return m, nil
@@ -135,7 +137,11 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					storage.SaveConfig(m.configCfg)
 					m.configStep = 0
 				} else if m.configStep == 1 {
-					m.configCfg.RemoteURL += msg.String()
+					if msg.Type == tea.KeyRunes {
+						m.configCfg.RemoteURL += string(msg.Runes)
+					} else {
+						m.configCfg.RemoteURL += msg.String()
+					}
 				}
 			case "n", "N":
 				if m.configStep == 2 {
@@ -143,11 +149,19 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					storage.SaveConfig(m.configCfg)
 					m.configStep = 0
 				} else if m.configStep == 1 {
-					m.configCfg.RemoteURL += msg.String()
+					if msg.Type == tea.KeyRunes {
+						m.configCfg.RemoteURL += string(msg.Runes)
+					} else {
+						m.configCfg.RemoteURL += msg.String()
+					}
 				}
 			default:
-				if m.configStep == 1 && (msg.Type == tea.KeyRunes || msg.Type == tea.KeySpace) {
-					m.configCfg.RemoteURL += msg.String()
+				if m.configStep == 1 {
+					if msg.Type == tea.KeyRunes {
+						m.configCfg.RemoteURL += string(msg.Runes)
+					} else if msg.Type == tea.KeySpace {
+						m.configCfg.RemoteURL += " "
+					}
 				}
 			}
 			return m, nil
@@ -208,8 +222,12 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.trimInput = ""
 				m.trimAction = ""
 			default:
-				if m.trimStep == 1 && (msg.Type == tea.KeyRunes || msg.Type == tea.KeySpace) {
-					m.trimInput += msg.String()
+				if m.trimStep == 1 {
+					if msg.Type == tea.KeyRunes {
+						m.trimInput += string(msg.Runes)
+					} else if msg.Type == tea.KeySpace {
+						m.trimInput += " "
+					}
 				}
 			}
 			return m, nil
@@ -238,8 +256,10 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.createInput = m.createInput[:len(m.createInput)-1]
 				}
 			default:
-				if msg.Type == tea.KeyRunes || msg.Type == tea.KeySpace {
-					m.createInput += msg.String()
+				if msg.Type == tea.KeyRunes {
+					m.createInput += string(msg.Runes)
+				} else if msg.Type == tea.KeySpace {
+					m.createInput += " "
 				}
 			}
 			return m, nil
@@ -256,8 +276,12 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.startIndex = 0
 				}
 			default:
-				if msg.Type == tea.KeyRunes || msg.Type == tea.KeySpace {
-					m.filterInput += msg.String()
+				if msg.Type == tea.KeyRunes {
+					m.filterInput += string(msg.Runes)
+					m.cursor = 0
+					m.startIndex = 0
+				} else if msg.Type == tea.KeySpace {
+					m.filterInput += " "
 					m.cursor = 0
 					m.startIndex = 0
 				}
@@ -423,8 +447,11 @@ func (m modelState) View() string {
 			maxMargin = len(e.MarginKey)
 		}
 	}
-	if maxMargin < 2 {
-		maxMargin = 2 // Minimal width for visual separation
+	if maxMargin > 12 {
+		maxMargin = 12
+	}
+	if maxMargin < 1 {
+		maxMargin = 1 // Minimal width for visual separation
 	}
 
 	var contentLines []string
@@ -478,7 +505,11 @@ func (m modelState) View() string {
 
 			// Dynamic MarginKey
 			marginStr := ""
-			paddedMK := fmt.Sprintf("%-*s", maxMargin, entry.MarginKey)
+			displayMK := entry.MarginKey
+			if len(displayMK) > maxMargin {
+				displayMK = displayMK[:maxMargin-1] + "…"
+			}
+			paddedMK := fmt.Sprintf("%-*s", maxMargin, displayMK)
 			if entry.MarginKey != "" {
 				marginStr = MarginKeyStyle.Render(paddedMK) + " "
 			} else {

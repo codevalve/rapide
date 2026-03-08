@@ -43,6 +43,7 @@ rapide tui
 - **`T`**: Surgical trim (archive/delete entries before a specific date)
 - **`p`**: Toggle pin status (pinned items stay at the top)
 - **`e`**: Edit entry inline
+- **`c`**: Edit configuration settings (Git URL, Autosync)
 - **`q`**: Quit
 
 ## Usage
@@ -131,6 +132,7 @@ Rapide v2.5.0 introduces automated syncing with private Git repositories, allowi
 - **Setup**: `rapide sync --setup <git-url>`
 - **Manual Sync**: `rapide sync`
 - **Autosync**: `rapide sync --autosync true` (Automatically push/pull on every change and TUI startup)
+- **TUI Management**: Press `c` inside the TUI to quickly update your Remote URL and Autosync preferences.
 
 ## Pinning 📌
 
