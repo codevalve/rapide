@@ -38,6 +38,12 @@ Example: rapide work | - Martin updated git repo`,
 			os.Exit(1)
 		}
 
+		// First-run hint for empty journal
+		if existing, _ := s.List(); len(existing) == 0 {
+			fmt.Println(lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Render(
+				"Tip: Run 'rapide init' for an interactive setup wizard and example entries."))
+		}
+
 		entry := internal.ParseEntry(args)
 		id, err := s.Append(entry)
 		if err != nil {

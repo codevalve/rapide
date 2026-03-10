@@ -77,4 +77,23 @@ var (
 	SearchPromptStyle = lipgloss.NewStyle().
 				Foreground(PrimaryColor).
 				Bold(true)
+
+	// Help Overlay
+	HelpOverlayStyle = lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(PrimaryColor).
+			Padding(1, 3)
+
+	HelpHeaderStyle = lipgloss.NewStyle().
+			Foreground(HighlightColor).
+			Bold(true).
+			Underline(true)
+
+	HelpKeyStyle = lipgloss.NewStyle().
+			Foreground(AccentColor).
+			Bold(true).
+			Width(6)
+
+	HelpDescStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#CCCCCC"))
 )

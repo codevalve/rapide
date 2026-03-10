@@ -35,6 +35,7 @@ type modelState struct {
 	configStep  int
 	configCfg   *storage.Config
 	configInput string
+	showHelp    bool // toggles the in-app help overlay
 }
 
 func (m modelState) Init() tea.Cmd {
@@ -315,7 +316,14 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
+		case "?":
+			m.showHelp = !m.showHelp
+			return m, nil
 		case "/":
+			if m.showHelp {
+				m.showHelp = false
+				return m, nil
+			}
 			m.filtering = true
 			return m, nil
 		case "n":
@@ -336,6 +344,10 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.err = nil
 			return m, nil
 		case "esc":
+			if m.showHelp {
+				m.showHelp = false
+				return m, nil
+			}
 			m.filterInput = "" // Clear filter
 			m.cursor = 0
 			m.startIndex = 0
@@ -439,6 +451,11 @@ func (m modelState) View() string {
 
 	if !m.ready {
 		return "Initializing Rapanui..."
+	}
+
+	// Help overlay — short-circuits the normal view
+	if m.showHelp {
+		return m.renderHelp()
 	}
 
 	// Header
@@ -623,7 +640,7 @@ func (m modelState) View() string {
 		if m.filterInput != "" {
 			countInfo = fmt.Sprintf("%d/%d found", len(filtered), len(m.entries))
 		}
-		footerStatus = fmt.Sprintf("%s • %s new • %s edit • %s pin • %s filter • %s trim • %s config • %s done • %s quit",
+		footerStatus = fmt.Sprintf("%s • %s new • %s edit • %s pin • %s filter • %s trim • %s config • %s done • %s help • %s quit",
 			countInfo,
 			KeyStyle.Render("n"),
 			KeyStyle.Render("e"),
@@ -632,6 +649,7 @@ func (m modelState) View() string {
 			KeyStyle.Render("T"),
 			KeyStyle.Render("c"),
 			KeyStyle.Render("d"),
+			KeyStyle.Render("?"),
 			KeyStyle.Render("q"))
 	}
 
@@ -646,6 +664,97 @@ func (m modelState) View() string {
 	)
 
 	return AppStyle.Render(finalView)
+}
+
+// renderHelp renders the full-screen help overlay.
+func (m modelState) renderHelp() string {
+	bullets := [][]string{
+		{"•", "Task"},
+		{"x", "Done"},
+		{"O", "Event"},
+		{"-", "Note"},
+		{">", "Migrated"},
+		{"<", "Scheduled"},
+		{"AI", "Action Item"},
+	}
+	hotkeys := [][]string{
+		{"n", "New entry"},
+		{"e", "Edit entry"},
+		{"d", "Toggle done"},
+		{"p", "Pin/unpin"},
+		{"m", "Migrate task"},
+		{"x", "Delete entry"},
+		{"/", "Filter entries"},
+		{"T", "Trim journal"},
+		{"c", "Config"},
+		{"?", "Toggle help"},
+		{"q", "Quit"},
+	}
+
+	syntaxHint := DimmedStyle.Strikethrough(false).Render(
+		"Syntax: [collection | ] [bullet] content [!]")
+
+	// Build bullet column
+	bulletLines := []string{HelpHeaderStyle.Render("BULLETS"), ""}
+	for _, b := range bullets {
+		bulletLines = append(bulletLines,
+			fmt.Sprintf("%s %s", HelpKeyStyle.Render(b[0]), HelpDescStyle.Render(b[1])))
+	}
+
+	// Build hotkey column
+	hotkeyLines := []string{HelpHeaderStyle.Render("HOTKEYS"), ""}
+	for _, h := range hotkeys {
+		hotkeyLines = append(hotkeyLines,
+			fmt.Sprintf("%s %s", HelpKeyStyle.Render(h[0]), HelpDescStyle.Render(h[1])))
+	}
+
+	// Pad columns to same height
+	for len(bulletLines) < len(hotkeyLines) {
+		bulletLines = append(bulletLines, "")
+	}
+	for len(hotkeyLines) < len(bulletLines) {
+		hotkeyLines = append(hotkeyLines, "")
+	}
+
+	colWidth := 26
+	var rows []string
+	for i := range bulletLines {
+		left := lipgloss.NewStyle().Width(colWidth).Render(bulletLines[i])
+		right := hotkeyLines[i]
+		rows = append(rows, lipgloss.JoinHorizontal(lipgloss.Top, left, right))
+	}
+
+	body := strings.Join(rows, "\n")
+	dismiss := DimmedStyle.Strikethrough(false).Render("Press ? or esc to close")
+
+	panel := HelpOverlayStyle.Render(
+		lipgloss.JoinVertical(lipgloss.Left,
+			TitleStyle.Render("RAPIDE — Quick Reference"),
+			"",
+			syntaxHint,
+			"",
+			body,
+			"",
+			dismiss,
+		),
+	)
+
+	// Center the panel in the terminal
+	pw := lipgloss.Width(panel)
+	ph := lipgloss.Height(panel)
+	hPad := (m.width - pw) / 2
+	vPad := (m.height - ph) / 2
+	if hPad < 0 {
+		hPad = 0
+	}
+	if vPad < 0 {
+		vPad = 0
+	}
+
+	return lipgloss.NewStyle().
+		PaddingLeft(hPad).
+		PaddingTop(vPad).
+		Render(panel)
 }
 
 func InitialModel() modelState {
@@ -665,9 +774,13 @@ func InitialModel() modelState {
 		return modelState{err: err}
 	}
 
+	// First-run: auto-show help for empty journals
+	firstRun := len(entries) == 0
+
 	return modelState{
 		entries:   entries,
 		configCfg: cfg,
 		ready:     false, // Wait for first WindowSizeMsg
+		showHelp:  firstRun,
 	}
 }

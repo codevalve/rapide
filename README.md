@@ -4,6 +4,28 @@ A lightweight, dependency-minimal Go binary for Bullet Journal-style rapid loggi
 
 ![Rapide Hero Demo](demo/hero.gif)
 
+## Getting Started 🚀
+
+New to Rapide? Run the interactive setup wizard to configure your journal in under a minute:
+
+```bash
+rapide init
+```
+
+The wizard will:
+1. Ask your name (used in the welcome entry)
+2. Let you define your **collections** (margin keys like `work`, `health`, `ideas`)
+3. Optionally link a **private Git repo** for cross-device sync
+4. Seed your journal with **example entries** showing every bullet type
+
+Then open the TUI to explore:
+
+```bash
+rapide tui
+```
+
+Press **`?`** inside the TUI for a full quick-reference guide.
+
 ## Features in Action 🎬
 
 | Logging | Filtering | Git Sync |
@@ -44,6 +66,7 @@ rapide tui
 - **`p`**: Toggle pin status (pinned items stay at the top)
 - **`e`**: Edit entry inline
 - **`c`**: Edit configuration settings (Git URL, Autosync)
+- **`?`**: Toggle the in-app quick-reference help overlay
 - **`q`**: Quit
 
 ## Usage
@@ -62,7 +85,8 @@ Syntax: `rapide [margin-key] | [bullet] content [!]`
 
 | Command | Usage | Description |
 | :--- | :--- | :--- |
-| **`tui`** | `rapide tui` | **New!** Enter the interactive terminal interface |
+| **`init`** | `rapide init` | **New!** Interactive setup wizard — configure & seed your journal |
+| **`tui`** | `rapide tui` | Enter the interactive terminal interface |
 | **`list`** | `rapide list [today/3d/work]` | List entries (filtered by time or collection) |
 | **`done`** | `rapide done <id>` | Mark a task as completed (`x`) |
 | **`migrate`** | `rapide migrate <id>` | Move a task to today and mark original as migrated (`>`) |
@@ -70,8 +94,8 @@ Syntax: `rapide [margin-key] | [bullet] content [!]`
 | **`collections`**| `rapide collections` | See list of margin keys and item counts |
 | **`search`** | `rapide search <query>` | Search all entries for a keyword or ID |
 | **`edit`** | `rapide edit <id> <text>` | Update the content of an existing entry |
-| **`pin`** | `rapide pin <id>` | **New!** Toggle pin status (pinned items stay at top) |
-| **`sync`** | `rapide sync` | **New!** Sync logs with a private Git repository |
+| **`pin`** | `rapide pin <id>` | Toggle pin status (pinned items stay at top) |
+| **`sync`** | `rapide sync` | Sync logs with a private Git repository |
 | **`delete`** | `rapide delete <id>` | Permanently remove an entry |
 | **`trim`** | `rapide trim [--before DATE]` | Archive or delete old logs with confirmation |
 | **`version`** | `rapide version` | Show current version |
