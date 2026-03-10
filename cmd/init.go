@@ -172,7 +172,7 @@ func runInitWizard() {
 	fmt.Println()
 	fmt.Printf("  %s  Run %s to open the interactive journal.\n",
 		dimStyle.Render("→"),
-		accentStyle.Render("rapide ui"))
+		accentStyle.Render("rapide tui"))
 	fmt.Printf("  %s  Run %s to log your first entry.\n",
 		dimStyle.Render("→"),
 		accentStyle.Render("rapide • My first task"))
