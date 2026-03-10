@@ -30,12 +30,14 @@ Bridging the gap between local-only and cloud-hosted logs by leveraging private 
   - **Clipboard Support**: Robust handling for multi-character pastes in the terminal.
   - **Dynamic Layout**: Constrained collection column width with automatic truncation.
 
-## v2.7.0: Hashtags & Links
-- Gleaning the best "quality of life" features from tools like `nb` to make Rapide a power-user's journal.
+## v2.7.0: Documentation & Onboarding
+The goal is to lower the barrier to entry and ensure Rapide feels accessible to new users while maintaining its professional edge.
+
+- **Infrastructure**: Refined internal documentation and self-documenting CLI help.
 - **Features**:
-  - **Inline Tag Support**: Automatic highlighting and filtering for `#hashtags` within entry content.
-  - **Interactive Links**: URL detection in the TUI to quickly open reference links in your browser.
-  - **Journal Stats**: `rapide stats` to see activity heatmaps and collection distributions.
+  - **Interactive Tutorial**: A guided first-run experience within the TUI.
+  - **The "Context" system**: Enhanced in-app help (press `?`) that explains Rapide's syntax (bullets, margin keys) in real-time.
+  - **Example Collections**: Optionally seed the journal with best-practice templates (e.g., Work, Health, Ideas) on setup.
 
 ## v3.0.0: Rapide MCP (Model Context Protocol)
 Bridging the gap between your logs and AI agents by making Rapide a first-class MCP server.

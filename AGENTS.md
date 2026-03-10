@@ -33,6 +33,7 @@ Welcome, Comrade Agent! You are helping build **Rapide**, a lightweight, depende
 2.  **Git Sync Safety**: When modifying sync logic, ensure we preserve user logs. Use `--rebase` for pulls to avoid merge conflicts in the journal repository.
 3.  **MCP-First Mindset**: As of v3.0 planning, we are pivoting toward **MCP (Model Context Protocol)**. Any new command should also be considered for potential exposure as an MCP tool.
 4.  **CLI Compatibility**: Ensure every feature available in the TUI (like `pin` or `done`) is also available as a standalone CLI command for automation.
+5.  **Roadmap & Milestone Sync**: Always ensure `ROADMAP.md` and GitHub milestones are kept in sync whenever feature plans change or releases are completed.
 
 ---
 
