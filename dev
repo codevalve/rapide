@@ -1,6 +1,7 @@
 #!/bin/bash
 # dev — run rapide against the demo journal during development.
 # This prevents accidental writes to your personal ~/.rapide/entries.jsonl.
+# Uses `go run .` so changes to source are always picked up without rebuilding.
 #
 # Usage:
 #   ./dev tui
@@ -9,4 +10,4 @@
 #   ./dev "• My test task"
 #
 export RAPIDE_FILE="$(dirname "$0")/demo/demo.jsonl"
-./rapide "$@"
+go run . "$@"
