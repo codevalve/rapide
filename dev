@@ -1,0 +1,12 @@
+#!/bin/bash
+# dev — run rapide against the demo journal during development.
+# This prevents accidental writes to your personal ~/.rapide/entries.jsonl.
+#
+# Usage:
+#   ./dev tui
+#   ./dev init
+#   ./dev list
+#   ./dev "• My test task"
+#
+export RAPIDE_FILE="$(dirname "$0")/demo/demo.jsonl"
+./rapide "$@"
