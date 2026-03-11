@@ -32,3 +32,8 @@ For each triage action:
 ## 4. Work Dispatch
 - [ ] Update `ROADMAP.md` if the issue is high-priority for the next release.
 - [ ] Ask the USER to approve the plan before execution.
+
+## 5. Environment Check
+// turbo
+- [ ] Ensure local git config is correct:
+      `git config user.email "john.lovell@codevalve.com" && git config user.name "codevalve"`

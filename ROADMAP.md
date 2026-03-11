@@ -30,14 +30,23 @@ Bridging the gap between local-only and cloud-hosted logs by leveraging private 
   - **Clipboard Support**: Robust handling for multi-character pastes in the terminal.
   - **Dynamic Layout**: Constrained collection column width with automatic truncation.
 
-## v2.7.0: Documentation & Onboarding
+## v2.7.2: Security Fix (Released 🔒🚀)
+- **Fixes**:
+  - **esbuild**: Resolved a security vulnerability in `esbuild` using npm overrides in the documentation site.
+
+## v2.7.1: Build & Security (Released 🛠️🚀)
+- **Fixes**:
+  - **CI/CD Align**: Updated Go to 1.25 and Node to 22 in GitHub Actions.
+  - **Security**: Added Dependabot configuration for automated dependency tracking.
+
+## v2.7.0: Documentation & Onboarding (Released 📖🚀)
 The goal is to lower the barrier to entry and ensure Rapide feels accessible to new users while maintaining its professional edge.
 
 - **Infrastructure**: Refined internal documentation and self-documenting CLI help.
 - **Features**:
-  - **Interactive Tutorial**: A guided first-run experience within the TUI.
-  - **The "Context" system**: Enhanced in-app help (press `?`) that explains Rapide's syntax (bullets, margin keys) in real-time.
-  - **Example Collections**: Optionally seed the journal with best-practice templates (e.g., Work, Health, Ideas) on setup.
+  - **`rapide init`**: Interactive setup wizard to seed your journal.
+  - **TUI Help Overlay**: In-app quick reference (press `?`).
+  - **VitePress Documentation**: Dedicated docs site on GitHub Pages.
 
 ## v3.0.0: Rapide MCP (Model Context Protocol)
 Bridging the gap between your logs and AI agents by making Rapide a first-class MCP server.
