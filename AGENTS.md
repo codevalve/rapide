@@ -37,7 +37,18 @@ Welcome, Comrade Agent! You are helping build **Rapide**, a lightweight, depende
 
 ---
 
-## 🚢 Workflows
+## 🧪 Developer Workflow
+
+When developing or testing locally, **never run `./rapide` directly** against your personal journal. Use the `./dev` wrapper instead:
+
+```bash
+./dev tui       # Open TUI against demo/demo.jsonl
+./dev init      # Test the init wizard
+./dev list      # Check demo entries
+```
+
+This sets `RAPIDE_FILE=demo/demo.jsonl` automatically, isolating all test writes from your personal `~/.rapide/entries.jsonl`. The `demo/*.jsonl` file is gitignored.
+
 Check `.agents/workflows/` for automated SOPs:
 - **`scaffold-command.md`**: How to add a new CLI command.
 - **`release-flow.md`**: Steps for bumping version and release.

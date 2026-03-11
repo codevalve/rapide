@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var Version = "dev"
+var Version = "2.7.0"
 
 var successStyle = lipgloss.NewStyle().
 	Bold(true).
@@ -36,6 +36,12 @@ Example: rapide work | - Martin updated git repo`,
 		if err != nil {
 			fmt.Printf("Error initializing storage: %v\n", err)
 			os.Exit(1)
+		}
+
+		// First-run hint for empty journal
+		if existing, _ := s.List(); len(existing) == 0 {
+			fmt.Println(lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Render(
+				"Tip: Run 'rapide init' for an interactive setup wizard and example entries."))
 		}
 
 		entry := internal.ParseEntry(args)
