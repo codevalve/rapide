@@ -48,8 +48,8 @@ The goal is to lower the barrier to entry and ensure Rapide feels accessible to 
   - **TUI Help Overlay**: In-app quick reference (press `?`).
   - **VitePress Documentation**: Dedicated docs site on GitHub Pages.
 
-## v3.0.0: Rapide MCP (Model Context Protocol)
-Bridging the gap between your logs and AI agents by making Rapide a first-class MCP server.
+## v3.0.0: Rapide MCP (Model Context Protocol) (Released 🗿🚀)
+Bridging the gap between your logs and AI agents by making Rapide a first-class MCP server via a hidden `mcp start` command.
 
 - **Infrastructure**: Implement a Model Context Protocol (MCP) server within the binary.
 - **Features**:
