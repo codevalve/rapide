@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var Version = "2.7.2"
+var Version = "3.0.0"
 
 var successStyle = lipgloss.NewStyle().
 	Bold(true).
@@ -26,10 +26,20 @@ Syntax: rapide [margin-key] | [bullet] content
 Example: rapide work | - Martin updated git repo`,
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		// Default action is to add an entry
-		if args[0] == "list" {
-			// This will be handled by the list subcommand
-			return
+		// If the first argument is a registered subcommand, let it handle the execution.
+		// Cobra usually does this automatically, but since we have a greedy Run function
+		// on the root command, we need to be careful not to consume subcommands.
+		if len(args) > 0 {
+			for _, sub := range cmd.Commands() {
+				if sub.Name() == args[0] {
+					// Found a subcommand match, this Run shouldn't have been called
+					// Or we can manually execute it if needed, but usually we just return
+					// and let Cobra handle it if Run was NOT defined.
+					// However, since Run IS defined, it takes precedence.
+					sub.Run(sub, args[1:])
+					return
+				}
+			}
 		}
 
 		s, err := storage.NewStorage()
