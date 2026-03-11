@@ -2,36 +2,9 @@
 
 A lightweight, dependency-minimal Go binary for Bullet Journal-style rapid logging.
 
-![Rapide Hero Demo](demo/hero.gif)
+![Rapide Demo](demo/hero.gif)
 
-## Getting Started 🚀
-
-New to Rapide? Run the interactive setup wizard to configure your journal in under a minute:
-
-```bash
-rapide init
-```
-
-The wizard will:
-1. Ask your name (used in the welcome entry)
-2. Let you define your **collections** (margin keys like `work`, `health`, `ideas`)
-3. Optionally link a **private Git repo** for cross-device sync
-4. Seed your journal with **example entries** showing every bullet type
-
-Then open the TUI to explore:
-
-```bash
-rapide tui
-```
-
-Press **`?`** inside the TUI for a full quick-reference guide.
-
-## Features in Action 🎬
-
-| Logging | Filtering | Git Sync |
-| :---: | :---: | :---: |
-| ![Logging Demo](demo/logging.gif) | ![Filtering Demo](demo/filtering.gif) | ![Sync Demo](demo/sync.gif) |
-
+**📖 [Read the full documentation →](https://codevalve.github.io/rapide/)**
 
 ## Installation
 
@@ -48,138 +21,51 @@ brew install rapide
 go install github.com/codevalve/rapide@latest
 ```
 
-## Interactive TUI 🗿
-
-Rapide v2.0 introduces a state-of-the-art Terminal User Interface. Run it with:
+## Quick Start
 
 ```bash
-rapide tui
+rapide init                    # Interactive setup wizard
+rapide "• Buy coffee"          # Log a task
+rapide "work | O Meeting!"     # Log to a collection
+rapide tui                     # Open the TUI
 ```
 
-### Key Hotkeys
-- **`/`**: Real-time filtering (search by content, collection, or ID)
-- **`n`**: Create a new entry without leaving the TUI
-- **`d`**: Toggle task completion (`x`)
-- **`m`**: Migrate task to today (`>`)
-- **`x`**: Delete entry
-- **`T`**: Surgical trim (archive/delete entries before a specific date)
-- **`p`**: Toggle pin status (pinned items stay at the top)
-- **`e`**: Edit entry inline
-- **`c`**: Edit configuration settings (Git URL, Autosync)
-- **`?`**: Toggle the in-app quick-reference help overlay
-- **`q`**: Quit
+Press **`?`** inside the TUI for a quick-reference of all hotkeys and bullet types.
 
-## Usage
+## Features
 
-### Logging
+| | |
+|---|---|
+| 🗿 **Minimalist** | One binary, zero bloat, no heavy dependencies |
+| ⚡ **Fast CLI** | Log entries in seconds from your terminal |
+| 🖥️ **Interactive TUI** | Full-screen interface with hotkeys, filtering, and inline editing |
+| 🌉 **Git Sync** | Sync your journal across machines with a private repo |
+| 📌 **Pinning** | Keep critical entries at the top |
+| 🔒 **Private** | Everything stays local in `~/.rapide/` |
 
-Syntax: `rapide [margin-key] | [bullet] content [!]`
+## Documentation
 
-- **Task (`•`)**: `rapide "• Buy coffee"` (or just `rapide "Buy coffee"`)
-- **Note (`-`)**: `rapide "- Review PR"`
-- **Event (`O`)**: `rapide "O Meeting @ 2pm"`
-- **Priority**: Append `!` to any entry to mark it important.
-- **Short IDs**: Every entry has a unique 4-character ID (displayed in `list` and `tui`).
+Visit the **[docs site](https://codevalve.github.io/rapide/)** for:
 
-### Commands
-
-| Command | Usage | Description |
-| :--- | :--- | :--- |
-| **`init`** | `rapide init` | **New!** Interactive setup wizard — configure & seed your journal |
-| **`tui`** | `rapide tui` | Enter the interactive terminal interface |
-| **`list`** | `rapide list [today/3d/work]` | List entries (filtered by time or collection) |
-| **`done`** | `rapide done <id>` | Mark a task as completed (`x`) |
-| **`migrate`** | `rapide migrate <id>` | Move a task to today and mark original as migrated (`>`) |
-| **`unfinished`**| `rapide unfinished` | List all non-completed tasks (`•`) |
-| **`collections`**| `rapide collections` | See list of margin keys and item counts |
-| **`search`** | `rapide search <query>` | Search all entries for a keyword or ID |
-| **`edit`** | `rapide edit <id> <text>` | Update the content of an existing entry |
-| **`pin`** | `rapide pin <id>` | Toggle pin status (pinned items stay at top) |
-| **`sync`** | `rapide sync` | Sync logs with a private Git repository |
-| **`delete`** | `rapide delete <id>` | Permanently remove an entry |
-| **`trim`** | `rapide trim [--before DATE]` | Archive or delete old logs with confirmation |
-| **`version`** | `rapide version` | Show current version |
-
-#### Command Details
-
-- **Filtering Logs**: `rapide list` supports flags for precision tracking:
-  - `-t, --time`: `3d`, `today`, `7d`
-  - `-f, --filter`: Filter by margin key (e.g., `-f work`)
-  - `-b, --bullet`: Filter by symbol (e.g., `-b O` for events, `-b x` for done)
-- **Workflow Icons**:
-  - `•` Task (standard)
-  - `x` Done (struck-through and dimmed)
-  - `>` Migrated (moved forward)
-  - `O` Event (notable occurrence)
-  - `-` Note (simple record)
-  - `!` Priority (important)
+- [Getting Started](https://codevalve.github.io/rapide/getting-started)
+- [Syntax & Bullets](https://codevalve.github.io/rapide/guide/syntax)
+- [TUI Guide](https://codevalve.github.io/rapide/guide/tui)
+- [CLI Commands](https://codevalve.github.io/rapide/reference/commands)
+- [Configuration](https://codevalve.github.io/rapide/reference/configuration)
+- [Git Sync](https://codevalve.github.io/rapide/reference/git-sync)
 
 ## Shell Autocompletion
 
-Rapide supports generated autocompletion scripts for various shells.
-
-### Homebrew (macOS/Linux)
-Completions are managed automatically. Ensure your shell is configured to load Homebrew completions.
-
-### Manual Installation (macOS, Linux, Windows)
-
-#### Zsh
-Add this to your `~/.zshrc`:
-```zsh
-source <(rapide completion zsh)
-```
-
-#### Bash
-Add this to your `~/.bashrc`:
 ```bash
-source <(rapide completion bash)
+source <(rapide completion zsh)     # Zsh
+source <(rapide completion bash)    # Bash
+rapide completion fish | source     # Fish
 ```
-
-#### Fish
-Add this to `~/.config/fish/config.fish`:
-```fish
-rapide completion fish | source
-```
-
-#### PowerShell (Windows)
-Add this to your PowerShell profile:
-```powershell
-rapide completion powershell | Out-String | Invoke-Expression
-```
-
----
-
-## Git Synchronization 🔄
-
-Rapide v2.5.0 introduces automated syncing with private Git repositories, allowing you to keep your logs in sync across machines.
-
-- **Setup**: `rapide sync --setup <git-url>`
-- **Manual Sync**: `rapide sync`
-- **Autosync**: `rapide sync --autosync true` (Automatically push/pull on every change and TUI startup)
-- **TUI Management**: Press `c` inside the TUI to quickly update your Remote URL and Autosync preferences.
-
-## Pinning 📌
-
-Keep critical projects or urgent tasks at the top of your list! Pinned items are sorted first, regardless of their timestamp.
-
-- **CLI**: `rapide pin <id>`
-- **TUI**: Hover over an item and press `p`.
-
----
-
-## Storage
-
-Entries and configuration are stored in your home directory:
-- **Entries**: `~/.rapide/entries.jsonl`
-- **Config**: `~/.rapide/config.json` (Stores Git settings and preferences)
-
----
 
 ## Join the Community 🤝
 
-We are actively looking for testers and early adopters to help shape the future of Rapide! If you're interested in providing feedback, reporting bugs, or suggesting new features, please:
+We are actively looking for testers and early adopters! If you're interested:
 
 1. [Open an issue](https://github.com/codevalve/rapide/issues) with your thoughts.
 2. Join the discussion in our [GitHub Discussions](https://github.com/codevalve/rapide/discussions).
 3. Star the repo to stay updated!
-

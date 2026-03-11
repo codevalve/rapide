@@ -1,0 +1,14 @@
+{
+  "name": "rapide-docs",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "VitePress documentation site for Rapide",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.3"
+  }
+}
