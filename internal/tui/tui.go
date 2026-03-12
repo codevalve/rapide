@@ -35,6 +35,7 @@ type modelState struct {
 	configStep  int
 	configCfg   *storage.Config
 	configInput string
+	version     string
 	showHelp    bool // toggles the in-app help overlay
 }
 
@@ -729,7 +730,7 @@ func (m modelState) renderHelp() string {
 
 	panel := HelpOverlayStyle.Render(
 		lipgloss.JoinVertical(lipgloss.Left,
-			TitleStyle.Render("RAPIDE — Quick Reference"),
+			TitleStyle.Render(fmt.Sprintf("RAPIDE v%s — Quick Reference", m.version)),
 			"",
 			syntaxHint,
 			"",
@@ -757,7 +758,7 @@ func (m modelState) renderHelp() string {
 		Render(panel)
 }
 
-func InitialModel() modelState {
+func InitialModel(v string) modelState {
 	s, err := storage.NewStorage()
 	if err != nil {
 		return modelState{err: err}
@@ -780,6 +781,7 @@ func InitialModel() modelState {
 	return modelState{
 		entries:   entries,
 		configCfg: cfg,
+		version:   v,
 		ready:     false, // Wait for first WindowSizeMsg
 		showHelp:  firstRun,
 	}
