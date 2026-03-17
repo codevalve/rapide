@@ -124,6 +124,26 @@ var listCmd = &cobra.Command{
 			renderEntry(e, maxMargin)
 		}
 	},
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if len(args) != 0 {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+
+		s, err := storage.NewStorage()
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveError
+		}
+
+		keys, err := s.GetUniqueMarginKeys()
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveError
+		}
+
+		// Add static time filters
+		keys = append(keys, "today", "3d", "7d", "30d")
+
+		return keys, cobra.ShellCompDirectiveNoFileComp
+	},
 }
 
 func init() {

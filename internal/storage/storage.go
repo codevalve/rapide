@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"rapide/internal/model"
+	"sort"
 	"time"
 )
 
@@ -301,6 +302,56 @@ func (s *Storage) TrimBefore(cutoff time.Time) (int, error) {
 	}
 
 	return count, s.saveAll(toKeep)
+}
+
+func (s *Storage) GetUniqueMarginKeys() ([]string, error) {
+	entries, err := s.List()
+	if err != nil {
+		return nil, err
+	}
+
+	keysMap := make(map[string]struct{})
+	for _, e := range entries {
+		if e.MarginKey != "" {
+			keysMap[e.MarginKey] = struct{}{}
+		}
+	}
+
+	keys := make([]string, 0, len(keysMap))
+	for k := range keysMap {
+		keys = append(keys, k)
+	}
+	return keys, nil
+}
+
+func (s *Storage) GetRecentIDs() ([]string, error) {
+	entries, err := s.List()
+	if err != nil {
+		return nil, err
+	}
+
+	// Only return IDs for relevant items (maybe last 50?)
+	// Sort by timestamp desc
+	sort.Slice(entries, func(i, j int) bool {
+		return entries[i].Timestamp.After(entries[j].Timestamp)
+	})
+
+	limit := 50
+	if len(entries) < limit {
+		limit = len(entries)
+	}
+
+	ids := make([]string, 0, limit)
+	for i := 0; i < limit; i++ {
+		// Include content snippet in completion description if possible
+		// Cobra supports "id\tDescription" format
+		snippet := entries[i].Content
+		if len(snippet) > 30 {
+			snippet = snippet[:27] + "..."
+		}
+		ids = append(ids, fmt.Sprintf("%s\t%s %s", entries[i].ID, entries[i].Bullet, snippet))
+	}
+	return ids, nil
 }
 
 func generateID(e model.Entry) string {

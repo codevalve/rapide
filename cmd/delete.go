@@ -27,6 +27,23 @@ var deleteCmd = &cobra.Command{
 
 		fmt.Printf("%s Entry %s deleted.\n", successStyle.Render("✓"), id)
 	},
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if len(args) != 0 {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+
+		s, err := storage.NewStorage()
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveError
+		}
+
+		ids, err := s.GetRecentIDs()
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveError
+		}
+
+		return ids, cobra.ShellCompDirectiveNoFileComp
+	},
 }
 
 func init() {

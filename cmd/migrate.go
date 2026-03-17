@@ -67,6 +67,23 @@ var migrateCmd = &cobra.Command{
 
 		fmt.Printf("%s Task %s migrated to today (New ID: %s).\n", successStyle.Render("✓"), id, newID)
 	},
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if len(args) != 0 {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+
+		s, err := storage.NewStorage()
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveError
+		}
+
+		ids, err := s.GetRecentIDs()
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveError
+		}
+
+		return ids, cobra.ShellCompDirectiveNoFileComp
+	},
 }
 
 func init() {
