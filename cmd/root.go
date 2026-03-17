@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var Version = "3.0.2"
+var Version = "3.0.3"
 
 var successStyle = lipgloss.NewStyle().
 	Bold(true).

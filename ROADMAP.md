@@ -64,6 +64,10 @@ Maintenance release focusing on fixing build warnings and keeping CI/CD healthy.
   - Update GoReleaser configuration to use specified version (`~> v2`).
   - Opt actions runner into Node.js 24 runtime to future-proof workflows.
 
+## v3.0.3: GoReleaser Deprecation Fix (Released 🛠️🚀)
+- **Infrastructure**:
+  - Address GoReleaser v2 deprecations by renaming `format` to `formats` in `.goreleaser.yaml`.
+
 
 ---
 
