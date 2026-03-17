@@ -36,6 +36,8 @@ Welcome, Comrade Agent! You are helping build **Rapide**, a lightweight, depende
 5.  **Conventional Commits**: Use the **Conventional Commits** specification for all commit messages (e.g., `feat:`, `fix:`, `chore:`, `docs:`).
 6.  **Issue Lifecycle**: When working on tasks, always create or reference a GitHub issue. Close the issue using the GitHub CLI or API once the task is merged and verified.
 7.  **Roadmap & Milestone Sync**: Always ensure `ROADMAP.md` and GitHub milestones are kept in sync whenever feature plans change or releases are completed.
+8. **Bug Fixes**: When a bug is reported, don't start by trying to fix it. Instead, start by writing a test that reproduces the bug. Then, try to fix the bug and prove it with a passing test. Always use the `./dev` wrapper for test isolation. Create or reference a GitHub issue and use the Conventional Commit `fix:` type. Close the issue once verified.
+9. **Context Window Protection**: Follow the mandatory routing rules in `GEMINI.md`. Use `ctx_execute`, `ctx_batch_execute`, and `ctx_execute_file` for large outputs to avoid flooding the context window.
 
 ---
 
