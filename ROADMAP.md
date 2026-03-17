@@ -58,6 +58,13 @@ Bridging the gap between your logs and AI agents by making Rapide a first-class 
   - **Tool Integration**: Expose `rapide` commands (list, done, migrate) as MCP tools.
   - **Privacy First**: Local-first MCP server ensuring your journal stays under your control.
 
+## v3.0.2: CI/CD Maintenance (Released 🛠️🚀)
+Maintenance release focusing on fixing build warnings and keeping CI/CD healthy.
+- **Infrastructure**:
+  - Update GoReleaser configuration to use specified version (`~> v2`).
+  - Opt actions runner into Node.js 24 runtime to future-proof workflows.
+
+
 ---
 
 *Inspired by the philosophy of Rapid Logging and the aesthetics of the Charm toolchain.*
