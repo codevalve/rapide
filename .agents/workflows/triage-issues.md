@@ -32,6 +32,7 @@ For each triage action:
 ## 4. Work Dispatch
 - [ ] Update `ROADMAP.md` if the issue is high-priority for the next release.
 - [ ] Ask the USER to approve the plan before execution.
+- [ ] **Closing**: After merging the fix to `main`, close the issue using `gh issue close <id> --comment "Fixed in vX.Y.Z"`.
 
 ## 5. Environment Check
 // turbo
