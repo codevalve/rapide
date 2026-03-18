@@ -15,7 +15,7 @@ hero:
       text: View on GitHub
       link: https://github.com/codevalve/rapide
   image:
-    src: /hero.gif
+    src: ../demo/hero.gif
     alt: Rapide Demo
 
 features:
