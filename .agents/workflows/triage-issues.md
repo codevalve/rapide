@@ -4,9 +4,13 @@ description: Pull latest GitHub issues and evaluate them against project philoso
 
 # Issue Triage & Engineering Workflow
 
-This workflow is designed to automate the process of reviewing new issues or feature requests for Rapide.
+## 1. Automated Triage (Autopilot)
+The `.github/workflows/autopilot.yml` action runs daily and automatically:
+- [x] Checks for new issues.
+- [x] Labeled new issues with `triage/needed`.
+- [ ] For manual triage, run `gh issue list --label triage/needed --limit 10`.
 
-## 1. Retrieve Latest Issues
+## 2. Retrieve Latest Issues
 // turbo
 - [ ] Run `gh issue list --limit 10` to see the most recent activity.
 - [ ] For each new ID, run `gh issue view <id>` to understand the full context.

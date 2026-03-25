@@ -1,0 +1,69 @@
+name: Rapide Autopilot
+
+on:
+  schedule:
+    - cron: '0 13 * * *' # Every day at 8:00 AM EST (13:00 UTC)
+  issues:
+    types: [opened, labeled]
+  workflow_dispatch: # Allows manual trigger for testing
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'issues' && github.event.action == 'opened')
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Triage New Issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Fetch all unassigned issues without a status label
+          ISSUES=$(gh issue list --search "no:label status:open" --json number)
+          
+          for row in $(echo "${ISSUES}" | jq -r '.[] | @base64'); do
+            _jq() {
+              echo ${row} | base64 --decode | jq -r ${1}
+            }
+            NUMBER=$(_jq '.number')
+            
+            echo "Triaging issue #${NUMBER}..."
+            gh issue edit ${NUMBER} --add-label "triage/needed"
+            gh issue comment ${NUMBER} --body "🗿 **Rapide Autopilot Triggered!** I've labeled this for triage. We'll evaluate it against our [AGENTS.md](.agents/AGENTS.md) philosophy soon."
+          done
+
+  dispatch:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' && github.event.action == 'labeled'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Dispatch Autonomous Worker
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Only proceed if the label 'status/accepted' was added
+          if [[ "${{ github.event.label.name }}" == "status/accepted" ]]; then
+            NUMBER=${{ github.event.issue.number }}
+            
+            # Identify if it's a bug or enhancement
+            LABELS=$(gh issue view ${NUMBER} --json labels --jq '.labels[].name')
+            
+            if [[ "$LABELS" =~ "bug" ]] || [[ "$LABELS" =~ "enhancement" ]]; then
+              echo "Dispatching Copilot to issue #${NUMBER}..."
+              
+              # Assign Copilot Bot
+              gh issue edit ${NUMBER} --add-assignee "github-copilot[bot]"
+              
+              # Provide contextual hint for the agent
+              gh issue comment ${NUMBER} --body "🚀 **Autonomous Worker Dispatched!** 
+              
+              I've assigned GitHub Copilot to start work. 
+              Agent, please refer to our engineering guardrails:
+              - [AGENTS.md](.agents/AGENTS.md)
+              - [.agents/workflows/triage-issues.md](.agents/workflows/triage-issues.md)
+              - [.agents/workflows/release-flow.md](.agents/workflows/release-flow.md) (if completing a fix)"
+            fi
+          fi
