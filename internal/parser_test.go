@@ -24,7 +24,7 @@ func TestParseEntry(t *testing.T) {
 			args:     []string{"IDEAS", "|", "-", "Priority note!"},
 			wantMK:   "IDEAS",
 			wantBlt:  "-",
-			wantCnt:  "Priority note!",
+			wantCnt:  "Priority note",
 		},
 		{
 			name:     "No margin key",

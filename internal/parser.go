@@ -21,14 +21,13 @@ func ParseEntry(args []string) model.Entry {
 		fullInput = strings.TrimSpace(fullInput)
 	}
 
-	parts := strings.SplitN(fullInput, "|", 2)
+	lastPipe := strings.LastIndex(fullInput, "|")
 	var contentPart string
-
-	if len(parts) == 2 {
-		entry.MarginKey = strings.TrimSpace(parts[0])
-		contentPart = strings.TrimSpace(parts[1])
+	if lastPipe != -1 {
+		entry.MarginKey = strings.TrimSpace(fullInput[:lastPipe])
+		contentPart = strings.TrimSpace(fullInput[lastPipe+1:])
 	} else {
-		contentPart = strings.TrimSpace(parts[0])
+		contentPart = strings.TrimSpace(fullInput)
 	}
 
 	// Detect bullet types
