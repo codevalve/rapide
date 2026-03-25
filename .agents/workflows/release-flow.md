@@ -10,6 +10,7 @@ This workflow outlines the standard process for releasing a new version of Rapid
 Ensure you are on the `main` branch and it is up-to-date.
 // turbo
 - [ ] Run `git checkout main && git pull origin main`
+- [ ] Run `go test ./...` to ensure all tests pass locally before proceeding.
 
 ## 2. Version Bump
 Update the version string in the source code.
