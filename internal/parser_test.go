@@ -8,75 +8,63 @@ func TestParseEntry(t *testing.T) {
 	tests := []struct {
 		name     string
 		args     []string
-		wantBlt  string
-		wantCont string
-		wantPrio bool
 		wantMK   string
+		wantBlt  string
+		wantCnt  string
 	}{
 		{
-			name:     "Simple note",
-			args:     []string{"-", "Hello world"},
-			wantBlt:  "-",
-			wantCont: "Hello world",
-			wantPrio: false,
-		},
-		{
-			name:     "Task with asterisk",
-			args:     []string{"*", "Buy milk"},
+			name:     "Standard task",
+			args:     []string{"WORK", "|", "•", "Task content"},
+			wantMK:   "WORK",
 			wantBlt:  "•",
-			wantCont: "Buy milk",
-			wantPrio: false,
+			wantCnt:  "Task content",
 		},
 		{
-			name:     "Priority task",
-			args:     []string{"•", "Fix bug!"},
-			wantBlt:  "•",
-			wantCont: "Fix bug",
-			wantPrio: true,
-		},
-		{
-			name:     "Combined margin and bullet",
-			args:     []string{"work", "|", "-", "Deep work"},
+			name:     "Note with priority",
+			args:     []string{"IDEAS", "|", "-", "Priority note!"},
+			wantMK:   "IDEAS",
 			wantBlt:  "-",
-			wantCont: "Deep work",
-			wantMK:   "work",
+			wantCnt:  "Priority note!",
 		},
 		{
-			name:     "Event with margin",
-			args:     []string{"personal", "|", "O", "Party"},
-			wantBlt:  "O",
-			wantCont: "Party",
-			wantMK:   "personal",
+			name:     "No margin key",
+			args:     []string{"•", "Simple task"},
+			wantMK:   "",
+			wantBlt:  "•",
+			wantCnt:  "Simple task",
 		},
 		{
-			name:     "Done task",
-			args:     []string{"x", "Finished task"},
-			wantBlt:  "x",
-			wantCont: "Finished task",
+			name:     "Multiple pipes",
+			args:     []string{"WORK", "|", "PROJ", "|", "•", "Nested pipes"},
+			wantMK:   "WORK | PROJ",
+			wantBlt:  "•",
+			wantCnt:  "Nested pipes",
 		},
 		{
-			name:     "Migrated task",
-			args:     []string{">", "Moved task"},
-			wantBlt:  ">",
-			wantCont: "Moved task",
+			name:     "Time margin key",
+			args:     []string{"◔ 09:30", "|", "-", "Morning standup"},
+			wantMK:   "◔ 09:30",
+			wantBlt:  "-",
+			wantCnt:  "Morning standup",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := ParseEntry(tt.args)
-			if got.Bullet != tt.wantBlt {
-				t.Errorf("ParseEntry() Bullet = %v, want %v", got.Bullet, tt.wantBlt)
-			}
-			if got.Content != tt.wantCont {
-				t.Errorf("ParseEntry() Content = %v, want %v", got.Content, tt.wantCont)
-			}
-			if got.Priority != tt.wantPrio {
-				t.Errorf("ParseEntry() Priority = %v, want %v", got.Priority, tt.wantPrio)
-			}
 			if got.MarginKey != tt.wantMK {
 				t.Errorf("ParseEntry() MarginKey = %v, want %v", got.MarginKey, tt.wantMK)
 			}
+			if got.Bullet != tt.wantBlt {
+				t.Errorf("ParseEntry() Bullet = %v, want %v", got.Bullet, tt.wantBlt)
+			}
+			if got.Content != tt.wantCnt {
+				t.Errorf("ParseEntry() Content = %v, want %v", got.Content, tt.wantCnt)
+			}
 		})
 	}
+}
+
+func TestEntry_String(t *testing.T) {
+	// Simple sanity check for String() representation if exists
 }

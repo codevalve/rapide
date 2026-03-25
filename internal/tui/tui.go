@@ -36,7 +36,9 @@ type modelState struct {
 	configCfg   *storage.Config
 	configInput string
 	version     string
-	showHelp    bool // toggles the in-app help overlay
+	showHelp      bool // toggles the in-app help overlay
+	timeEntryStep int  // 0: none, 1: HHMM input, 2: content input
+	timeInput     string
 }
 
 func (m modelState) Init() tea.Cmd {
@@ -127,6 +129,68 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.editInput += string(msg.Runes)
 				} else if msg.Type == tea.KeySpace {
 					m.editInput += " "
+				}
+			}
+			return m, nil
+		}
+
+		if m.timeEntryStep > 0 {
+			switch msg.String() {
+			case "esc":
+				m.timeEntryStep = 0
+				m.timeInput = ""
+				m.createInput = ""
+			case "backspace":
+				if m.timeEntryStep == 1 && len(m.timeInput) > 0 {
+					m.timeInput = m.timeInput[:len(m.timeInput)-1]
+					if len(m.timeInput) == 0 {
+						m.timeEntryStep = 0
+					}
+				} else if m.timeEntryStep == 2 && len(m.createInput) > 0 {
+					m.createInput = m.createInput[:len(m.createInput)-1]
+				}
+			case "enter":
+				if m.timeEntryStep == 1 {
+					if len(m.timeInput) == 4 {
+						// Validate time
+						hh, _ := strconv.Atoi(m.timeInput[:2])
+						mm, _ := strconv.Atoi(m.timeInput[2:])
+						if hh < 24 && mm < 60 {
+							m.timeEntryStep = 2
+						}
+					}
+				} else if m.timeEntryStep == 2 {
+					if m.createInput != "" {
+						hh := m.timeInput[:2]
+						mm := m.timeInput[2:]
+						margin := fmt.Sprintf("%s%s:%s", PrefixClock, hh, mm)
+
+						entry := bujo.ParseEntry([]string{m.createInput})
+						entry.MarginKey = margin
+
+						s, _ := storage.NewStorage()
+						s.Append(entry)
+						m.entries, _ = s.List()
+						m.timeEntryStep = 0
+						m.timeInput = ""
+						m.createInput = ""
+						m.cursor = len(m.entries) - 1
+					}
+				}
+			default:
+				if m.timeEntryStep == 1 {
+					if msg.Type == tea.KeyRunes && len(m.timeInput) < 4 {
+						r := msg.Runes[0]
+						if r >= '0' && r <= '9' {
+							m.timeInput += string(r)
+						}
+					}
+				} else if m.timeEntryStep == 2 {
+					if msg.Type == tea.KeyRunes {
+						m.createInput += string(msg.Runes)
+					} else if msg.Type == tea.KeySpace {
+						m.createInput += " "
+					}
 				}
 			}
 			return m, nil
@@ -344,6 +408,14 @@ func (m modelState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.trimInput = ""
 			m.err = nil
 			return m, nil
+		case "t":
+			m.timeEntryStep = 1
+			m.timeInput = ""
+			return m, nil
+		case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9":
+			m.timeEntryStep = 1
+			m.timeInput = msg.String()
+			return m, nil
 		case "esc":
 			if m.showHelp {
 				m.showHelp = false
@@ -484,8 +556,9 @@ func (m modelState) View() string {
 	// Dynamic Margin Width calculation (Issue #11)
 	maxMargin := 0
 	for _, e := range filtered {
-		if len(e.MarginKey) > maxMargin {
-			maxMargin = len(e.MarginKey)
+		mk := StripIcons(e.MarginKey)
+		if len(mk) > maxMargin {
+			maxMargin = len(mk)
 		}
 	}
 	if maxMargin > 12 {
@@ -544,26 +617,27 @@ func (m modelState) View() string {
 			// Add Timestamp
 			tsStr := TimestampStyle.Render(entry.Timestamp.Format("02 Jan 15:04"))
 
+			// Indicator column (Pin > Time > Agent)
+			icon := GetIcon(entry.Pinned, entry.MarginKey)
+			if icon == "" {
+				icon = " "
+			}
+			indicatorStr := PinnedStyle.Render(icon)
+
 			// Dynamic MarginKey
+			displayMK := StripIcons(entry.MarginKey)
 			marginStr := ""
-			displayMK := entry.MarginKey
 			if len(displayMK) > maxMargin {
 				displayMK = displayMK[:maxMargin-1] + "…"
 			}
 			paddedMK := fmt.Sprintf("%-*s", maxMargin, displayMK)
-			if entry.MarginKey != "" {
+			if displayMK != "" {
 				marginStr = MarginKeyStyle.Render(paddedMK) + " "
 			} else {
 				marginStr = strings.Repeat(" ", maxMargin+1)
 			}
 
-			// Pinned indicator
-			pinnedStr := "  "
-			if entry.Pinned {
-				pinnedStr = PinnedStyle.Render("📌")
-			}
-
-			line := fmt.Sprintf("%-6s %s %s %s%s %s", shortID, tsStr, pinnedStr, marginStr, bulletStr, contentStr)
+			line := fmt.Sprintf("%-6s %s %s %s%s %s", shortID, tsStr, indicatorStr, marginStr, bulletStr, contentStr)
 			contentLines = append(contentLines, style.Width(m.width-4).Render(line))
 		}
 	}
@@ -576,7 +650,29 @@ func (m modelState) View() string {
 
 	// Dynamic Footer / Status Bar
 	var footerStatus string
-	if m.trimStep == 1 {
+	if m.timeEntryStep == 1 {
+		display := m.timeInput
+		if len(display) > 2 {
+			display = display[:2] + ":" + display[2:]
+		}
+		tStyle := SearchStyle
+		if len(m.timeInput) == 4 {
+			hh, _ := strconv.Atoi(m.timeInput[:2])
+			mm, _ := strconv.Atoi(m.timeInput[2:])
+			if hh >= 24 || mm >= 60 {
+				tStyle = ErrorStyle
+			}
+		}
+		footerStatus = fmt.Sprintf("%s %s",
+			SearchPromptStyle.Render("TIME (HHMM):"),
+			tStyle.Render(display+"_"))
+	} else if m.timeEntryStep == 2 {
+		hh := m.timeInput[:2]
+		mm := m.timeInput[2:]
+		footerStatus = fmt.Sprintf("%s %s",
+			SearchPromptStyle.Render(fmt.Sprintf("NOTE at %s:%s:", hh, mm)),
+			SearchStyle.Render(m.createInput+"_"))
+	} else if m.trimStep == 1 {
 		footerStatus = fmt.Sprintf("%s %s",
 			SearchPromptStyle.Render("TRIM before (YYYY-MM-DD or ENTER for Today):"),
 			SearchStyle.Render(m.trimInput+"_"))
@@ -641,9 +737,10 @@ func (m modelState) View() string {
 		if m.filterInput != "" {
 			countInfo = fmt.Sprintf("%d/%d found", len(filtered), len(m.entries))
 		}
-		footerStatus = fmt.Sprintf("%s • %s new • %s edit • %s pin • %s filter • %s trim • %s config • %s done • %s help • %s quit",
+		footerStatus = fmt.Sprintf("%s • %s new • %s time • %s edit • %s pin • %s filter • %s trim • %s config • %s done • %s help • %s quit",
 			countInfo,
 			KeyStyle.Render("n"),
+			KeyStyle.Render("t"),
 			KeyStyle.Render("e"),
 			KeyStyle.Render("p"),
 			KeyStyle.Render("/"),
@@ -680,6 +777,7 @@ func (m modelState) renderHelp() string {
 	}
 	hotkeys := [][]string{
 		{"n", "New entry"},
+		{"t/0-9", "Time entry"},
 		{"e", "Edit entry"},
 		{"d", "Toggle done"},
 		{"p", "Pin/unpin"},

@@ -5,12 +5,30 @@ import (
 	"os"
 	"rapide/internal"
 	"rapide/internal/storage"
+	"rapide/internal/tui"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 )
 
-var Version = "3.0.3"
+func init() {
+	rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
+		cfg, _ := storage.LoadConfig()
+		if cfg != nil {
+			theme := cfg.IconTheme
+			// Migration path for legacy nerd_fonts boolean
+			if theme == "" && cfg.NerdFonts {
+				theme = "nerdfont"
+			}
+			if theme == "" {
+				theme = "unicode"
+			}
+			tui.SetIconTheme(theme)
+		}
+	}
+}
+
+var Version = "3.1.0"
 
 var successStyle = lipgloss.NewStyle().
 	Bold(true).

@@ -10,6 +10,8 @@ type Config struct {
 	RemoteURL    string `json:"remote_url,omitempty"`
 	AutoSync     bool   `json:"auto_sync"`
 	AutoHideDays int    `json:"auto_hide_days"`
+	IconTheme    string `json:"icon_theme"` // "unicode", "nerdfont", "octicons"
+	NerdFonts    bool   `json:"nerd_fonts,omitempty"`
 }
 
 func GetConfigPath() (string, error) {

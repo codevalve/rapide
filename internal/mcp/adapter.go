@@ -4,6 +4,7 @@ import (
 	"context"
 	"rapide/internal/model"
 	"rapide/internal/storage"
+	"rapide/internal/tui"
 	"strings"
 	"time"
 )
@@ -32,6 +33,23 @@ func (a *storageAdapter) AddAgentEntry(ctx context.Context, content string) (*mo
 		Pinned:    false,
 	}
 
+	// Detect if content starts with HH:MM | or just HH:MM
+	parts := strings.SplitN(content, " ", 2)
+	potentialTime := strings.TrimSuffix(parts[0], "|")
+	if len(potentialTime) == 5 && potentialTime[2] == ':' {
+		hh := potentialTime[:2]
+		mm := potentialTime[3:]
+		// Simple validation
+		if hh >= "00" && hh <= "23" && mm >= "00" && mm <= "59" {
+			entry.MarginKey = tui.PrefixAgent + potentialTime
+			if len(parts) > 1 {
+				entry.Content = strings.TrimPrefix(parts[1], "| ")
+			} else {
+				entry.Content = ""
+			}
+		}
+	}
+
 	id, err := a.storage.Append(entry)
 	if err != nil {
 		return nil, err
@@ -49,7 +67,8 @@ func (a *storageAdapter) SearchAgentEntries(ctx context.Context, query string) (
 	var results []model.Entry
 	q := strings.ToLower(query)
 	for _, e := range all {
-		if e.MarginKey == "AGENT" && strings.Contains(strings.ToLower(e.Content), q) {
+		isAgent := e.MarginKey == "AGENT" || strings.HasPrefix(e.MarginKey, tui.IconAgent) || strings.HasPrefix(e.MarginKey, "🤖")
+		if isAgent && strings.Contains(strings.ToLower(e.Content), q) {
 			results = append(results, e)
 		}
 	}
@@ -64,7 +83,8 @@ func (a *storageAdapter) ListRecentAgentEntries(ctx context.Context, limit int) 
 
 	var agentEntries []model.Entry
 	for i := len(all) - 1; i >= 0; i-- {
-		if all[i].MarginKey == "AGENT" {
+		isAgent := all[i].MarginKey == "AGENT" || strings.HasPrefix(all[i].MarginKey, tui.IconAgent) || strings.HasPrefix(all[i].MarginKey, "🤖")
+		if isAgent {
 			agentEntries = append(agentEntries, all[i])
 			if len(agentEntries) >= limit {
 				break

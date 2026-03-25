@@ -5,6 +5,7 @@ import (
 	"os"
 	"rapide/internal/model"
 	"rapide/internal/storage"
+	"rapide/internal/tui"
 	"sort"
 	"strings"
 	"time"
@@ -115,8 +116,9 @@ var listCmd = &cobra.Command{
 			}
 
 			filtered = append(filtered, e)
-			if len(e.MarginKey) > maxMargin {
-				maxMargin = len(e.MarginKey)
+			mk := tui.StripIcons(e.MarginKey)
+			if len(mk) > maxMargin {
+				maxMargin = len(mk)
 			}
 		}
 
